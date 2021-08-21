@@ -1,0 +1,18 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: wallet
+  datasource:
+    url: jdbc:mariadb://localhost:3306/walletdb
+    username: root
+    password: gavallo97
+eureka:
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 5
+  client:
+    service-url:
+      default-zone: http://eurekadiscovery:8761/eureka
+
