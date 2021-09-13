@@ -1,7 +1,11 @@
 package it.polito.wa2.catalogservice
 
 import it.polito.wa2.catalogservice.configurations.EmailConfiguration
+import it.polito.wa2.catalogservice.entities.User
+import it.polito.wa2.catalogservice.enum.RoleName
+import it.polito.wa2.catalogservice.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient
@@ -20,6 +24,27 @@ class CatalogServiceApplication {
 
     @Autowired
     lateinit var emailCfg: EmailConfiguration
+
+    @Bean
+    fun createCustomersAndUsers(
+        @Autowired userRepository: UserRepository
+    ): CommandLineRunner {
+        return CommandLineRunner {
+
+            val user1 = User() //ADMIN
+            user1.username = "u1"
+            user1.name = "Adams"
+            user1.surname = "Scott"
+            user1.address = "48 K St NW, Washington, DC 20001, US"
+            user1.password = "p1"
+            user1.email = "email1@polito.it"
+            user1.addRoleName(RoleName.ROLE_ADMIN)
+            user1.isEnabled = true
+
+            userRepository.save(user1)
+
+        }
+    }
 
     @Bean
     fun getMailSender(): JavaMailSender? {

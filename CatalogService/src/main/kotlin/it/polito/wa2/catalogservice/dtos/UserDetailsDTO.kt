@@ -18,7 +18,7 @@ class UserDetailsDTO(
     private val isAccountNonExpired: Boolean?,
     private val isAccountNonLocked: Boolean?,
     private val isCredentialsNonExpired: Boolean?,
-    // private val customerId: Long?,
+    private val userId: Long?, //ho sostituito customerId con userId
     roles: Set<RoleName>?
 ) : UserDetails {
 
@@ -40,6 +40,12 @@ class UserDetailsDTO(
 //            return customerId
 //        return -1L
 //    }
+
+    fun getUserId() :Long {
+        if(userId != null)
+            return userId
+        return -1L
+    }
 
     override fun getPassword(): String {
         if (password != null)

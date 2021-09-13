@@ -97,5 +97,5 @@ fun User.toUserDTO(): UserDetailsDTO = UserDetailsDTO(
     isAccountNonLocked = null,
     isCredentialsNonExpired = null,
     roles = getRoleNames(),
-    // customerId = customer.id
+    userId = id
 )
