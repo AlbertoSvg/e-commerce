@@ -85,6 +85,7 @@ class JwtUtils(private val jwtCfg: JwtConfiguration) {
                 null,
                 null,
                 null,
+                null,
                 authorities
             )
 
