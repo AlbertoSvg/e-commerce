@@ -94,7 +94,7 @@ class WalletController {
      *
      * @return transactionDTO and status 201 (CREATED)
      */
-    @PostMapping("/{walletId}/transaction")
+    @PostMapping("/{walletId}/transactions")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
     fun createTransaction(
