@@ -27,5 +27,5 @@ class Warehouse : EntityBase<Long>() {
 fun Warehouse.toWarehouseDTO(): WarehouseDTO =
     WarehouseDTO(
         id = id,
-        name = name!!
+        name = name
     )
