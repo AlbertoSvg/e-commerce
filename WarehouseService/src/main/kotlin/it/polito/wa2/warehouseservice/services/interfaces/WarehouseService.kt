@@ -6,8 +6,8 @@ import org.springframework.data.domain.Page
 interface WarehouseService {
     fun getWarehouses(productId: Long?, pageNo: Int, pageSize: Int): Page<WarehouseDTO>
     fun getWarehouseById(warehouseId: Long): WarehouseDTO
-    fun createWarehouse(name: String): WarehouseDTO
-    fun updateOrCreateWarehouse(warehouseId: Long, name: String): WarehouseDTO
-    //TODO: fun updateWarehouse(name: String?): WarehouseDTO
+    fun createWarehouse(warehouseDTO: WarehouseDTO): WarehouseDTO
+    fun updateOrCreateWarehouse(warehouseId: Long, warehouseDTO: WarehouseDTO): WarehouseDTO
+    fun updateWarehouse(warehouseId: Long, warehouseDTO: WarehouseDTO): WarehouseDTO
     fun deleteWarehouse(warehouseId: Long)
 }

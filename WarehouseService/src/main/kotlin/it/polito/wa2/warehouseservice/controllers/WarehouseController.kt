@@ -3,6 +3,9 @@ package it.polito.wa2.warehouseservice.controllers
 import it.polito.wa2.warehouseservice.constants.Values
 import it.polito.wa2.warehouseservice.dtos.WarehouseDTO
 import it.polito.wa2.warehouseservice.services.interfaces.WarehouseService
+import it.polito.wa2.warehouseservice.validators.validatePatch
+import it.polito.wa2.warehouseservice.validators.validatePost
+import it.polito.wa2.warehouseservice.validators.validatePut
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,13 +22,14 @@ class WarehouseController {
     @Autowired
     private lateinit var warehouseService: WarehouseService
 
-    @GetMapping("/")
+    @GetMapping
     fun getWarehouses(
         @RequestParam("productId", required = false) productId: Long?,
         @RequestParam("pageNo", defaultValue = Values.DEFAULT_PAGE_NO) @Min(1) pageNo: Int,
         @RequestParam("pageSize", defaultValue = Values.DEFAULT_PAGE_SIZE) @Min(1) pageSize: Int,
     ): ResponseEntity<Any> {
         return try {
+            //TODO: fix getWarehouse returning page with no content
             val warehousePageDTO = warehouseService.getWarehouses(productId, pageNo, pageSize)
             val response = hashMapOf<String, Any>()
             response["warehouses"] = warehousePageDTO.content
@@ -50,12 +54,13 @@ class WarehouseController {
         }
     }
 
-    @PostMapping("/")
+    @PostMapping
     fun createWarehouse(
         @RequestBody warehouseDTO: WarehouseDTO,
     ): ResponseEntity<Any> {
         try {
-            val returnedWarehouseDTO = warehouseService.createWarehouse(warehouseDTO.name!!)
+            if (!warehouseDTO.validatePost()) return ResponseEntity.badRequest().body(Values.INVALID_WAREHOUSE_REPRESENTATION)
+            val returnedWarehouseDTO = warehouseService.createWarehouse(warehouseDTO)
             return ResponseEntity.status(HttpStatus.CREATED).body(returnedWarehouseDTO)
         } catch (e: RuntimeException) { //TODO: diversificazione eccezioni
             return ResponseEntity.badRequest().body(Values.EXCEPTION_OCCURRED)
@@ -68,27 +73,29 @@ class WarehouseController {
         @RequestBody warehouseDTO: WarehouseDTO,
     ): ResponseEntity<Any> {
         try {
-            val returnedWarehouseDTO = warehouseService.updateOrCreateWarehouse(warehouseId, warehouseDTO.name!!)
+            if (!warehouseDTO.validatePut()) return ResponseEntity.badRequest().body(Values.INVALID_WAREHOUSE_REPRESENTATION)
+            val returnedWarehouseDTO = warehouseService.updateOrCreateWarehouse(warehouseId, warehouseDTO)
             return ResponseEntity.ok(returnedWarehouseDTO)
         } catch (e: RuntimeException) {
             return ResponseEntity.badRequest().body(Values.EXCEPTION_OCCURRED)
         }
     }
 
-    /* TODO
+
     @PatchMapping("/{warehouseId}")
     fun updateWarehouse(
         @PathVariable("warehouseId") warehouseId: Long,
         @RequestBody warehouseDTO: WarehouseDTO
     ): ResponseEntity<Any> {
         try {
-            val returnedWarehouseDTO = warehouseService.updateWarehouse(warehouseDTO.name)
+            if (!warehouseDTO.validatePatch()) return ResponseEntity.badRequest().body(Values.INVALID_WAREHOUSE_REPRESENTATION)
+            val returnedWarehouseDTO = warehouseService.updateWarehouse(warehouseId, warehouseDTO)
             return ResponseEntity.ok(returnedWarehouseDTO)
         } catch (e: RuntimeException) {
             return ResponseEntity.badRequest().body(Values.EXCEPTION_OCCURRED)
         }
     }
-    */
+
 
     @DeleteMapping("/{warehouseId}")
     fun deleteWarehouse(
@@ -101,6 +108,4 @@ class WarehouseController {
             return ResponseEntity.badRequest().body(Values.EXCEPTION_OCCURRED)
         }
     }
-    //TODO: implement DTO validation with annotations or code for update, updateOrCreate, create, might need
-    // additional DTO
 }

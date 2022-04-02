@@ -4,6 +4,7 @@ import it.polito.wa2.warehouseservice.constants.Values
 import it.polito.wa2.warehouseservice.dtos.WarehouseDTO
 import it.polito.wa2.warehouseservice.entities.Warehouse
 import it.polito.wa2.warehouseservice.entities.toWarehouseDTO
+import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
 import it.polito.wa2.warehouseservice.repositories.WarehouseRepository
 import it.polito.wa2.warehouseservice.services.interfaces.WarehouseService
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,6 +21,9 @@ class WarehouseServiceImpl(): WarehouseService {
     @Autowired
     lateinit var warehouseRepository: WarehouseRepository
 
+    @Autowired
+    lateinit var productStockRepository: ProductStockRepository
+
     override fun getWarehouses(productId: Long?, pageNo: Int, pageSize: Int) : Page<WarehouseDTO> {
         val paging = PageRequest.of(pageNo, pageSize)
         var warehouses: Page<Warehouse> = Page.empty() //TODO: rimuovere var+empty eventualmente quando else sarà implementato
@@ -27,8 +31,8 @@ class WarehouseServiceImpl(): WarehouseService {
         if (productId == null) {
             warehouses = warehouseRepository.findAll(paging)
         }
-        //else
-        //    val warehouse = productStockRepository.findAllWarehousesByProductId(productId, paging)
+        else
+            warehouses = productStockRepository.findAllByProductId(productId!!, paging).map { it -> it.warehouse }
         return warehouses.map { it.toWarehouseDTO() }
     }
 
@@ -38,21 +42,21 @@ class WarehouseServiceImpl(): WarehouseService {
         return warehouse.get().toWarehouseDTO()
     }
 
-    override fun createWarehouse(name: String): WarehouseDTO {
-        val warehouse = Warehouse().also { it.name = name }
+    override fun createWarehouse(warehouseDTO: WarehouseDTO): WarehouseDTO {
+        val warehouse = Warehouse().also { it.name = warehouseDTO.name }
         return warehouseRepository.save(warehouse).toWarehouseDTO()
     }
 
-    override fun updateOrCreateWarehouse(warehouseId: Long, name: String): WarehouseDTO {
+    override fun updateOrCreateWarehouse(warehouseId: Long, warehouseDTO: WarehouseDTO): WarehouseDTO {
         val warehouseOpt = warehouseRepository.findById(warehouseId)
         if (warehouseOpt.isPresent) {
-            warehouseOpt.get().name = name
+            warehouseOpt.get().name = warehouseDTO.name
             return warehouseRepository.save(warehouseOpt.get()).toWarehouseDTO()
         }
         else {
             val warehouse = Warehouse().also {
                 it.id = warehouseId
-                it.name = name
+                it.name = warehouseDTO.name
             }
             return warehouseRepository.save(warehouse).toWarehouseDTO()
         }
@@ -65,11 +69,13 @@ class WarehouseServiceImpl(): WarehouseService {
             throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
     }
 
-    /* TODO
-    override fun updateWarehouse(name: String?): WarehouseDTO {
-        if (name != null) {
-
-        }
-    }*/
+    override fun updateWarehouse(warehouseId: Long, warehouseDTO: WarehouseDTO): WarehouseDTO {
+        val warehouseOpt = warehouseRepository.findById(warehouseId)
+        if (warehouseOpt.isEmpty) throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
+        val warehouse = warehouseOpt.get()
+        //TODO: se aggiungiamo altri membri al warehouseDTO, aggiungi qui!)
+        if (warehouseDTO.name != null) warehouse.name = warehouseDTO.name
+        return warehouseRepository.save(warehouse).toWarehouseDTO()
+    }
 
 }

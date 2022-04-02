@@ -10,6 +10,7 @@ class ProductStock : EntityBase<Long>() {
     var id = getId()
 
     @ManyToOne
+    @JoinColumn(name = "warehouse_id")
     var warehouse: Warehouse? = null
 
     @Column(name = "product_id")
