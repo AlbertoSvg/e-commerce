@@ -1,7 +1,7 @@
 package it.polito.wa2.walletservice.services
 
-import it.polito.wa2.walletservice.dtos.TransactionDTO
-import it.polito.wa2.walletservice.dtos.WalletDTO
+import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
+import it.polito.wa2.walletservice.dtos.wallet.WalletDTO
 import org.springframework.data.domain.Page
 import java.math.BigDecimal
 import java.time.LocalDateTime

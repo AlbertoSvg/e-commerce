@@ -6,7 +6,9 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient
 
 @SpringBootApplication
 @EnableEurekaClient
-class WalletServiceApplication
+class WalletServiceApplication{
+    //TODO: POPULATE DB
+}
 
 fun main(args: Array<String>) {
     runApplication<WalletServiceApplication>(*args)

@@ -1,14 +1,12 @@
 package it.polito.wa2.walletservice.services
 
-import it.polito.wa2.walletservice.costants.Strings
-import it.polito.wa2.walletservice.costants.Strings.CUSTOMER_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.DESTINATION_WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.INSUFFICIENT_CREDIT
 import it.polito.wa2.walletservice.costants.Strings.SENDER_WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.TRANSACTION_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.WALLET_NOT_FOUND
-import it.polito.wa2.walletservice.dtos.TransactionDTO
-import it.polito.wa2.walletservice.dtos.WalletDTO
+import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
+import it.polito.wa2.walletservice.dtos.wallet.WalletDTO
 import it.polito.wa2.walletservice.entities.Transaction
 import it.polito.wa2.walletservice.entities.Wallet
 import it.polito.wa2.walletservice.entities.toTransactionDTO
@@ -98,6 +96,7 @@ class WalletServiceImpl() : WalletService {
             throw RuntimeException(WALLET_NOT_FOUND)
         return transaction.toTransactionDTO()
     }
+
 
     override fun getTransactionsByDateRange(
         walletId: Long,
