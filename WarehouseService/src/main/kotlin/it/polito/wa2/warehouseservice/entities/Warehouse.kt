@@ -19,13 +19,14 @@ class Warehouse : EntityBase<Long>() {
     )
     var name: String? = null
 
-    //TODO: testa se la relazione è corretta da ambo i lati
+
     @OneToMany(mappedBy = "warehouse")
     val productsStocks = mutableSetOf<ProductStock>()
+
+    fun toWarehouseDTO(): WarehouseDTO =
+        WarehouseDTO(
+            id = id,
+            name = name
+        )
 }
 
-fun Warehouse.toWarehouseDTO(): WarehouseDTO =
-    WarehouseDTO(
-        id = id,
-        name = name
-    )

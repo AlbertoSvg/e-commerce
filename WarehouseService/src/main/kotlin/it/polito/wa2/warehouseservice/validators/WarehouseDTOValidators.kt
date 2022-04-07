@@ -15,7 +15,7 @@ fun WarehouseDTO.validatePost() : Boolean {
  * All fields not null
  */
 fun WarehouseDTO.validatePut() : Boolean {
-    return this.name != null && this.id != null
+    return this.name != null
 }
 
 /**

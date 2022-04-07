@@ -10,24 +10,26 @@ class ProductStock : EntityBase<Long>() {
     var id = getId()
 
     @ManyToOne
-    @JoinColumn(name = "warehouse_id")
+    @JoinColumn(name = "warehouse")
     var warehouse: Warehouse? = null
 
-    @Column(name = "product_id")
-    var productId: Long? = null
+    @ManyToOne
+    @JoinColumn(name = "product")
+    var product: Product? = null
 
     @Column(name = "product_qty")
     var productQty: Long? = null
 
     @Column(name = "alarm")
     var alarmLevel: Long? = null
+
+    fun toProductStockDTO(): ProductStockDTO =
+        ProductStockDTO(
+            id = id,
+            warehouseId = warehouse?.id!!,
+            productId = product?.id!!,
+            productQty = productQty!!,
+            alarmLevel = alarmLevel!!
+        )
 }
 
-fun ProductStock.toProductStockDTO(): ProductStockDTO =
-    ProductStockDTO(
-        id = id,
-        warehouseId = warehouse?.id!!,
-        productId = productId!!,
-        productQty = productQty!!,
-        alarmLevel = alarmLevel!!
-    )

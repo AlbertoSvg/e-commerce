@@ -3,7 +3,6 @@ package it.polito.wa2.warehouseservice.services.implementations
 import it.polito.wa2.warehouseservice.constants.Values
 import it.polito.wa2.warehouseservice.dtos.WarehouseDTO
 import it.polito.wa2.warehouseservice.entities.Warehouse
-import it.polito.wa2.warehouseservice.entities.toWarehouseDTO
 import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
 import it.polito.wa2.warehouseservice.repositories.WarehouseRepository
 import it.polito.wa2.warehouseservice.services.interfaces.WarehouseService
@@ -26,13 +25,13 @@ class WarehouseServiceImpl(): WarehouseService {
 
     override fun getWarehouses(productId: Long?, pageNo: Int, pageSize: Int) : Page<WarehouseDTO> {
         val paging = PageRequest.of(pageNo, pageSize)
-        var warehouses: Page<Warehouse> = Page.empty() //TODO: rimuovere var+empty eventualmente quando else sarà implementato
+        val warehouses: Page<Warehouse>
 
         if (productId == null) {
             warehouses = warehouseRepository.findAll(paging)
         }
         else
-            warehouses = productStockRepository.findAllByProductId(productId!!, paging).map { it -> it.warehouse }
+            warehouses = productStockRepository.findAllByProductId(productId, paging).map { it -> it.warehouse }
         return warehouses.map { it.toWarehouseDTO() }
     }
 
