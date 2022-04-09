@@ -10,7 +10,7 @@ import it.polito.wa2.walletservice.costants.Strings.TRANSACTION_EXECUTION_FAILED
 import it.polito.wa2.walletservice.costants.Strings.TRANSACTION_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.WRONG_PARAMETERS
-import it.polito.wa2.walletservice.dtos.TransactionDTO
+import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
 import it.polito.wa2.walletservice.services.WalletService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.format.annotation.DateTimeFormat

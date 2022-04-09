@@ -1,5 +1,6 @@
-package it.polito.wa2.walletservice.dtos
+package it.polito.wa2.walletservice.dtos.transaction
 
+import it.polito.wa2.walletservice.enum.TransactionType
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import javax.validation.constraints.NotNull
@@ -17,6 +18,7 @@ data class TransactionDTO(
 
     @field:NotNull val receiver: Long,
 
-    val timestamp: LocalDateTime?
+    val timestamp: LocalDateTime?,
 
+    val type: TransactionType
 )
