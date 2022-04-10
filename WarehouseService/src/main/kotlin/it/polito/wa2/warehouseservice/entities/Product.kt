@@ -35,7 +35,6 @@ class Product : EntityBase<Long>(){
     @Lob
     @Column(
         name="picture",
-        nullable = false,
         updatable = true
     )
     var picture: ByteArray? = null

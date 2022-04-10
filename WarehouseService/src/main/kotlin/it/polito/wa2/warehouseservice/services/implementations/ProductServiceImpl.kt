@@ -4,12 +4,14 @@ import it.polito.wa2.warehouseservice.constants.Values
 import it.polito.wa2.warehouseservice.dtos.ProductDTO
 import it.polito.wa2.warehouseservice.entities.Product
 import it.polito.wa2.warehouseservice.repositories.ProductRepository
+import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
 import it.polito.wa2.warehouseservice.services.interfaces.ProductService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 
 @Service
 @Transactional
@@ -17,6 +19,9 @@ class ProductServiceImpl: ProductService {
 
     @Autowired
     private lateinit var productRepository: ProductRepository
+
+    @Autowired
+    private lateinit var productStockRepository: ProductStockRepository
 
     override fun getProducts(category: String?, pageNo: Int, pageSize: Int): Page<ProductDTO> {
         val paging = PageRequest.of(pageNo, pageSize)
@@ -37,7 +42,11 @@ class ProductServiceImpl: ProductService {
     }
 
     override fun createProduct(productDTO: ProductDTO): ProductDTO {
-        val product = Product().also { it.category = productDTO.category }
+        val product = Product().also {
+            it.category = productDTO.category
+            it.description = productDTO.description
+            it.price = productDTO.price
+        }
         return productRepository.save(product).toProductDTO()
     }
 
@@ -77,5 +86,21 @@ class ProductServiceImpl: ProductService {
             productRepository.deleteById(productId)
         else
             throw RuntimeException(Values.PRODUCT_NOT_FOUND)
+    }
+
+    override fun addPicture(productId: Long, picture: MultipartFile) {
+        val productOpt = productRepository.findById(productId)
+        if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
+        val product = productOpt.get()
+        product.picture = picture.bytes
+        productRepository.save(product)
+    }
+
+    override fun getPicture(productId: Long): ByteArray {
+        val productOpt = productRepository.findById(productId)
+        if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
+        val product = productOpt.get()
+        if (product.picture == null) throw RuntimeException(Values.PICTURE_NOT_FOUND)
+        else return product.picture!!
     }
 }

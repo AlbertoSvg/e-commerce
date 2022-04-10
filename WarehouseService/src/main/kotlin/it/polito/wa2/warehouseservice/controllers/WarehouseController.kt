@@ -25,16 +25,16 @@ class WarehouseController {
         @RequestParam("pageNo", defaultValue = Values.DEFAULT_PAGE_NO) @Min(0) pageNo: Int,
         @RequestParam("pageSize", defaultValue = Values.DEFAULT_PAGE_SIZE) @Min(1) pageSize: Int,
     ): ResponseEntity<Any> {
-        return try {
+        try {
             val warehousePageDTO = warehouseService.getWarehouses(productId, pageNo, pageSize)
             val response = hashMapOf<String, Any>()
             response["warehouses"] = warehousePageDTO.content
             response["currentPage"] = pageNo
             response["totalItems"] = warehousePageDTO.totalElements
             response["totalPages"] = warehousePageDTO.totalPages
-            ResponseEntity.ok(response)
+            return ResponseEntity.ok(response)
         } catch(e: RuntimeException) { //TODO: diversificazione eccezioni
-            ResponseEntity.badRequest().body(Values.EXCEPTION_OCCURRED)
+            return ResponseEntity.badRequest().body(e.message)
         }
     }
 
@@ -42,11 +42,11 @@ class WarehouseController {
     fun getWarehouseById(
         @PathVariable("warehouseId") warehouseId: Long
     ): ResponseEntity<Any> {
-        return try {
+        try {
             val warehouseDTO = warehouseService.getWarehouseById(warehouseId)
-            ResponseEntity.ok(warehouseDTO)
+            return ResponseEntity.ok(warehouseDTO)
         } catch(e: RuntimeException) {
-            ResponseEntity.badRequest().body(Values.EXCEPTION_OCCURRED)
+            return ResponseEntity.badRequest().body(e.message)
         }
     }
 
@@ -59,7 +59,7 @@ class WarehouseController {
             val responseWarehouseDTO = warehouseService.createWarehouse(warehouseDTO)
             return ResponseEntity.status(HttpStatus.CREATED).body(responseWarehouseDTO)
         } catch (e: RuntimeException) {
-            return ResponseEntity.badRequest().body(Values.EXCEPTION_OCCURRED)
+            return ResponseEntity.badRequest().body(e.message)
         }
     }
 
@@ -73,7 +73,7 @@ class WarehouseController {
             val responseWarehouseDTO = warehouseService.updateOrCreateWarehouse(warehouseId, warehouseDTO)
             return ResponseEntity.ok(responseWarehouseDTO)
         } catch (e: RuntimeException) {
-            return ResponseEntity.badRequest().body(Values.EXCEPTION_OCCURRED)
+            return ResponseEntity.badRequest().body(e.message)
         }
     }
 
@@ -88,7 +88,7 @@ class WarehouseController {
             val responseWarehouseDTO = warehouseService.updateWarehouse(warehouseId, warehouseDTO)
             return ResponseEntity.ok(responseWarehouseDTO)
         } catch (e: RuntimeException) {
-            return ResponseEntity.badRequest().body(Values.EXCEPTION_OCCURRED)
+            return ResponseEntity.badRequest().body(e.message)
         }
     }
 
@@ -101,7 +101,7 @@ class WarehouseController {
             warehouseService.deleteWarehouse(warehouseId)
             return ResponseEntity.noContent().build()
         } catch (e: RuntimeException) {
-            return ResponseEntity.badRequest().body(Values.EXCEPTION_OCCURRED)
+            return ResponseEntity.badRequest().body(e.message)
         }
     }
 }

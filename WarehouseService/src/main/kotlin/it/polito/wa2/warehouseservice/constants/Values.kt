@@ -1,6 +1,7 @@
 package it.polito.wa2.warehouseservice.constants
 
 object Values {
+    const val PICTURE_NOT_FOUND = "Picture not found"
     const val INVALID_PRODUCT_REPRESENTATION = "Provided product representation is invalid"
     const val PRODUCT_NOT_FOUND = "Product not found"
     const val INVALID_WAREHOUSE_REPRESENTATION = "Provided warehouse representation is invalid"

@@ -5,7 +5,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "product_stock")
-class ProductStock : EntityBase<Long>() {
+class ProductStock: EntityBase<Long>() {
 
     var id = getId()
 
@@ -25,7 +25,6 @@ class ProductStock : EntityBase<Long>() {
 
     fun toProductStockDTO(): ProductStockDTO =
         ProductStockDTO(
-            id = id,
             warehouseId = warehouse?.id!!,
             productId = product?.id!!,
             productQty = productQty!!,
