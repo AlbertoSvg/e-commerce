@@ -109,7 +109,6 @@ class ProductController {
         }
     }
 
-    //TODO: fix + test
     @GetMapping("/{productId}/picture")
     fun getProductPicture(
         @PathVariable("productId") productId: Long
@@ -122,11 +121,10 @@ class ProductController {
         }
     }
 
-    //TODO: fix + test
     @PostMapping("/{productId}/picture")
     fun addPicture(
         @PathVariable("productId") productId: Long,
-        @RequestParam("image") picture: MultipartFile
+        @RequestParam("file") picture: MultipartFile
     ): ResponseEntity<Any> {
         try {
             productService.addPicture(productId, picture)
