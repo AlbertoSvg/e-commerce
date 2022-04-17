@@ -1,6 +1,7 @@
 package it.polito.wa2.warehouseservice.controllers
 
 import it.polito.wa2.warehouseservice.constants.Values
+import it.polito.wa2.warehouseservice.dtos.ProductStockDTO
 import it.polito.wa2.warehouseservice.dtos.WarehouseDTO
 import it.polito.wa2.warehouseservice.services.interfaces.WarehouseService
 import it.polito.wa2.warehouseservice.validators.validatePatch
@@ -101,6 +102,50 @@ class WarehouseController {
             warehouseService.deleteWarehouse(warehouseId)
             return ResponseEntity.noContent().build()
         } catch (e: RuntimeException) {
+            return ResponseEntity.badRequest().body(e.message)
+        }
+    }
+
+    @PostMapping("/{warehouseId}/products")
+    fun addProductStock(
+        @PathVariable("warehouseId") warehouseId: Long,
+        @RequestBody productStockDTO: ProductStockDTO
+    ): ResponseEntity<Any> {
+        try{
+            if (!productStockDTO.validatePost()) return ResponseEntity.badRequest().body(Values.INVALID_PRODUCT_STOCK_REPRESENTATION)
+            val responseStockDTO = warehouseService.addProductStock(warehouseId, productStockDTO)
+            return ResponseEntity.ok(responseStockDTO)
+        } catch(e: RuntimeException) {
+            return ResponseEntity.badRequest().body(e.message)
+        }
+    }
+
+    @PutMapping("/{warehouseId}/products/{productId}")
+    fun updateOrAddProductStock(
+        @PathVariable("warehouseId") warehouseId: Long,
+        @PathVariable("productId") productId: Long,
+        @RequestBody productStockDTO: ProductStockDTO
+    ): ResponseEntity<Any> {
+        try {
+            if (!productStockDTO.validatePut()) return ResponseEntity.badRequest().body(Values.INVALID_PRODUCT_STOCK_REPRESENTATION)
+            val responseStockDTO = warehouseService.updateOrAddProductStock(warehouseId, productId, productStockDTO)
+            return ResponseEntity.ok(responseStockDTO)
+        } catch(e: RuntimeException) {
+            return ResponseEntity.badRequest().body(e.message)
+        }
+    }
+
+    @PatchMapping("/{warehouseId}/products/{productId}")
+    fun updateProductStock(
+        @PathVariable("warehouseId") warehouseId: Long,
+        @PathVariable("productId") productId: Long,
+        @RequestBody productStockDTO: ProductStockDTO
+    ): ResponseEntity<Any> {
+        try {
+            if (!productStockDTO.validatePatch()) return ResponseEntity.badRequest().body(Values.INVALID_PRODUCT_STOCK_REPRESENTATION)
+            val responseStockDTO = warehouseService.updateProductStock(warehouseId, productId, productStockDTO)
+            return ResponseEntity.ok(responseStockDTO)
+        } catch(e: RuntimeException) {
             return ResponseEntity.badRequest().body(e.message)
         }
     }

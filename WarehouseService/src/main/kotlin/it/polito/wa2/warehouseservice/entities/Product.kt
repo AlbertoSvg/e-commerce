@@ -2,6 +2,7 @@ package it.polito.wa2.warehouseservice.entities
 
 import it.polito.wa2.warehouseservice.dtos.ProductDTO
 import javax.persistence.*
+import javax.validation.constraints.Positive
 
 //NOTA: se aggiungiamo campi all'entità, modifcare DTO, service, controller, validators per coerenza
 
@@ -25,6 +26,7 @@ class Product : EntityBase<Long>(){
     )
     var description: String? = null
 
+    @Positive
     @Column(
         name = "price",
         nullable = false,

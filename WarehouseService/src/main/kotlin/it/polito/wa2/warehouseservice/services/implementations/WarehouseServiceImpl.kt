@@ -1,8 +1,11 @@
 package it.polito.wa2.warehouseservice.services.implementations
 
 import it.polito.wa2.warehouseservice.constants.Values
+import it.polito.wa2.warehouseservice.dtos.ProductStockDTO
 import it.polito.wa2.warehouseservice.dtos.WarehouseDTO
+import it.polito.wa2.warehouseservice.entities.ProductStock
 import it.polito.wa2.warehouseservice.entities.Warehouse
+import it.polito.wa2.warehouseservice.repositories.ProductRepository
 import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
 import it.polito.wa2.warehouseservice.repositories.WarehouseRepository
 import it.polito.wa2.warehouseservice.services.interfaces.WarehouseService
@@ -22,6 +25,9 @@ class WarehouseServiceImpl(): WarehouseService {
 
     @Autowired
     lateinit var productStockRepository: ProductStockRepository
+
+    @Autowired
+    lateinit var productRepository: ProductRepository
 
     override fun getWarehouses(productId: Long?, pageNo: Int, pageSize: Int) : Page<WarehouseDTO> {
         val paging = PageRequest.of(pageNo, pageSize)
@@ -77,4 +83,74 @@ class WarehouseServiceImpl(): WarehouseService {
         return warehouseRepository.save(warehouse).toWarehouseDTO()
     }
 
+    override fun addProductStock(warehouseId: Long, productStockDTO: ProductStockDTO): ProductStockDTO {
+        val warehouseOpt = warehouseRepository.findById(warehouseId)
+        if (warehouseOpt.isEmpty) throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
+        val warehouse = warehouseOpt.get()
+        val productOpt = productRepository.findById(productStockDTO.productId!!)
+        if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
+        val product = productOpt.get()
+        val productStock = ProductStock().also {
+            it.product = product
+            it.warehouse = warehouse
+            it.productQty = productStockDTO.productQty
+            it.alarmLevel = productStockDTO.alarmLevel
+        }
+        return productStockRepository.save(productStock).toProductStockDTO()
+    }
+
+    override fun updateOrAddProductStock(
+        warehouseId: Long,
+        productId: Long,
+        productStockDTO: ProductStockDTO
+    ): ProductStockDTO {
+        val stock: ProductStock
+
+        val warehouseOpt = warehouseRepository.findById(warehouseId)
+        if (warehouseOpt.isEmpty) throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
+        val warehouse = warehouseOpt.get()
+
+        val productOpt = productRepository.findById(productId)
+        if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
+        val product = productOpt.get()
+
+        val stockOpt = productStockRepository.findProductStockByWarehouseAndProduct(warehouse, product)
+        if (stockOpt.isEmpty) {
+            stock = ProductStock().also{
+                it.warehouse = warehouse
+                it.product = product
+                it.alarmLevel = productStockDTO.alarmLevel
+                it.productQty = productStockDTO.productQty
+            }
+        }
+        else {
+            stock = stockOpt.get()
+            stock.productQty = productStockDTO.productQty
+            stock.alarmLevel = productStockDTO.alarmLevel
+        }
+        return productStockRepository.save(stock).toProductStockDTO()
+    }
+
+    override fun updateProductStock(
+        warehouseId: Long,
+        productId: Long,
+        productStockDTO: ProductStockDTO
+    ): ProductStockDTO {
+        val warehouseOpt = warehouseRepository.findById(warehouseId)
+        if (warehouseOpt.isEmpty) throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
+        val warehouse = warehouseOpt.get()
+
+        val productOpt = productRepository.findById(productId)
+        if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
+        val product = productOpt.get()
+
+        val stockOpt = productStockRepository.findProductStockByWarehouseAndProduct(warehouse, product)
+        if (stockOpt.isEmpty) throw RuntimeException(Values.PRODUCT_STOCK_NOT_FOUND)
+        val stock = stockOpt.get()
+        if (productStockDTO.productQty != null) stock.productQty = productStockDTO.productQty
+        if (productStockDTO.alarmLevel != null) stock.alarmLevel = productStockDTO.alarmLevel
+
+        return productStockRepository.save(stock).toProductStockDTO()
+
+    }
 }

@@ -8,19 +8,19 @@ import it.polito.wa2.warehouseservice.dtos.ProductDTO
  * All fields, id excluded, not null
  */
 fun ProductDTO.validatePost() : Boolean {
-    return this.category != null && this.description != null && this.price != null
+    return this.category != null && this.description != null && this.price != null && this.price!! > 0
 }
 
 /**
  * All fields, id excluded, not null
  */
 fun ProductDTO.validatePut() : Boolean {
-    return this.category != null && this.description != null && this.price != null
+    return this.category != null && this.description != null && this.price != null && this.price!! > 0
 }
 
 /**
  * At least one field not null
  */
 fun ProductDTO.validatePatch() : Boolean {
-    return this.category != null || this.description != null || this.price != null
+    return this.category != null || this.description != null || (this.price != null && this.price!! > 0)
 }

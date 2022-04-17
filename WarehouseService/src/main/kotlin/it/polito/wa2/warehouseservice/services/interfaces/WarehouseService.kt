@@ -1,5 +1,6 @@
 package it.polito.wa2.warehouseservice.services.interfaces
 
+import it.polito.wa2.warehouseservice.dtos.ProductStockDTO
 import it.polito.wa2.warehouseservice.dtos.WarehouseDTO
 import org.springframework.data.domain.Page
 
@@ -10,4 +11,7 @@ interface WarehouseService {
     fun updateOrCreateWarehouse(warehouseId: Long, warehouseDTO: WarehouseDTO): WarehouseDTO
     fun updateWarehouse(warehouseId: Long, warehouseDTO: WarehouseDTO): WarehouseDTO
     fun deleteWarehouse(warehouseId: Long)
+    fun addProductStock(warehouseId: Long, productStockDTO: ProductStockDTO): ProductStockDTO
+    fun updateOrAddProductStock(warehouseId: Long, productId: Long, productStockDTO: ProductStockDTO): ProductStockDTO
+    fun updateProductStock(warehouseId: Long, productId: Long, productStockDTO: ProductStockDTO): ProductStockDTO
 }
