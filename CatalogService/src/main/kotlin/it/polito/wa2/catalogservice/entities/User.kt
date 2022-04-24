@@ -2,26 +2,27 @@ package it.polito.wa2.catalogservice.entities
 
 import it.polito.wa2.catalogservice.dtos.UserDetailsDTO
 import it.polito.wa2.catalogservice.enum.RoleName
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import javax.persistence.*
+//import javax.persistence.*
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
 
-// TODO: Vogliamo inglobare Customer dentro a User?? Dopotutto Customer e' uno User
+@Document(collection = "user")
+class User {
 
-@Entity
-@Table(name = "user", indexes = [Index(name = "index", columnList = "username", unique = true)])
-class User : EntityBase<Long>() {
+    @Id
+    @field:NotNull
+    var id: String? = null
 
-    var id = getId()
-
-    @Column(name = "username", unique = true, nullable = false)
-    @NotBlank(message = "Username is required")
+    @field:NotBlank(message = "Username is required")
+    @field:NotNull
     lateinit var username: String
 
-    @Column(name = "password", nullable = false)
-    @NotBlank(message = "Password is required")
+    @field:NotBlank(message = "Password is required")
     var password: String = ""
         get() = field
         set(value) {
@@ -29,48 +30,32 @@ class User : EntityBase<Long>() {
             field = passwordEncoder.encode(value)
         }
 
-    @Column(name = "email", unique = true, nullable = false)
-    @NotEmpty(message = "Email is required")
-    @Email
+
+    @field:NotEmpty(message = "Email is required")
+    @field:Email
+    @field:NotNull
     lateinit var email: String
 
-    @Column(name = "is_enabled", nullable = false)
+    @field:NotNull(message = "name must be present")
+    lateinit var name: String
+
+    @field:NotNull(message = "surname must be present")
+    lateinit var surname: String
+
+    var address: String? = null
+
+    @field:NotNull
     var isEnabled: Boolean = false
 
-    @Column(name = "roles")
+
+    @field:NotBlank
     var roles: String = ""
 
-    // @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "user")
-    // lateinit var customer: Customer
-
-    //prima era in customer
-    @Column(
-        name = "name",
-        nullable = false,
-        updatable = true
-    )
-    var name: String? = null
-
-    //prima era in customer
-    @Column(
-        name = "surname",
-        nullable = false,
-        updatable = true
-    )
-    var surname: String? = null
-
-    //prima era in customer
-    @Column(
-        name = "address",
-        nullable = false,
-        updatable = true
-    )
-    var address: String? = null
 
     fun getRoleNames(): Set<RoleName> {
         val rolesList = roles.trim().split(" ")
         val rolesListTrimmed = rolesList.map { it -> it.trim() }
-        val rolesValues = rolesListTrimmed.map { it -> RoleName.valueOf(it) }
+        val rolesValues = rolesListTrimmed.map { it -> RoleName.valueOf("ROLE_$it") }
         return rolesValues.toSet()
     }
 
@@ -86,16 +71,16 @@ class User : EntityBase<Long>() {
 }
 
 fun User.toUserDTO(): UserDetailsDTO = UserDetailsDTO(
+    id = id!!.toString(),
     username = username,
     password = password,
-    name = name, //da customer
-    surname = surname, //da customer
-    address = address, //da customer
     email = email,
     isEnabled = isEnabled,
     isAccountNonExpired = null,
     isAccountNonLocked = null,
     isCredentialsNonExpired = null,
     roles = getRoleNames(),
-    userId = id
+    name = name,
+    surname = surname,
+    address = address
 )

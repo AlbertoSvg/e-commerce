@@ -7,4 +7,3 @@ data class EnableUserDTO(
     @field:NotBlank val username: String,
     @field:BooleanFlag val enable: Boolean
 )
-

@@ -1,68 +1,111 @@
 package it.polito.wa2.catalogservice.security
 
-import it.polito.wa2.catalogservice.services.implementations.UserDetailsServiceImpl
+import it.polito.wa2.catalogservice.dtos.ErrorMessageDTO
+import it.polito.wa2.catalogservice.gateway.GatewayAuthenticationFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
-import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.builders.WebSecurity
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.core.ResolvableType
+import org.springframework.core.codec.Hints
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.codec.json.Jackson2JsonEncoder
+import org.springframework.security.authentication.ReactiveAuthenticationManager
+import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder
+import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.server.SecurityWebFilterChain
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
+import org.springframework.web.server.ServerWebExchange
+import reactor.core.publisher.Mono
 
 
 @Configuration
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-class WebSecurityConfig(
-    @Autowired
-    val passwordEncoder: PasswordEncoder,
-    @Autowired
-    val userDetailsService: UserDetailsServiceImpl,
-    @Autowired
-    val authenticationEntryPoint: AuthEntryPoint
-) : WebSecurityConfigurerAdapter() {
+@EnableWebFluxSecurity
+@EnableReactiveMethodSecurity
+class WebfluxSecurityConfig {
 
     @Bean
-    fun authTokenFilter(): JwtAuthenticationTokenFilter = JwtAuthenticationTokenFilter()
-
-    override fun configure(auth: AuthenticationManagerBuilder) {
-        auth
-            .userDetailsService(userDetailsService)
-            .passwordEncoder(passwordEncoder)
+    fun reactiveAuthenticationManager(@Autowired userDetailsService: ReactiveUserDetailsService,
+                                      @Autowired passwordEncoder: PasswordEncoder): ReactiveAuthenticationManager {
+        val authenticationManager = UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService)
+        authenticationManager.setPasswordEncoder(passwordEncoder)
+        return authenticationManager
     }
+
 
     @Bean
-    override fun authenticationManagerBean(): AuthenticationManager {
-        return super.authenticationManagerBean()
-    }
+    fun springSecurityFilterChain(http: ServerHttpSecurity,
+                                  @Autowired authenticationWebFilter: JwtAuthenticationTokenFilter,
+                                  @Autowired gatewayAuthenticationFilter: GatewayAuthenticationFilter
+    ): SecurityWebFilterChain {
 
-    override fun configure(web: WebSecurity) {
-        super.configure(web)
-    }
-
-    override fun configure(http: HttpSecurity) {
-        http.cors()
-            .and()
-            .csrf()
-            .disable()
-            .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint)
-            .and()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeRequests()
-            .antMatchers("/auth/**")
+        http
+            // auth
+            .authorizeExchange()
+            .pathMatchers("/auth/signin")
             .permitAll()
-            .antMatchers("/wallet/**")
-            .authenticated()
-            .anyRequest()
-            .authenticated()
+            .and()
+            .authorizeExchange()
+            .pathMatchers("/auth/register")
+            .permitAll()
+            .and()
+            .authorizeExchange()
+            .pathMatchers("/auth/registrationConfirm")
+            .permitAll()
+            .and()
+            .authorizeExchange()
+            .pathMatchers("/auth/enableUser")
+            .hasRole("ADMIN")
+            .and()
+            .authorizeExchange()
+            .pathMatchers("/auth/addRole")
+            .hasRole("ADMIN")
+            .and()
+            .authorizeExchange()
+            .pathMatchers("/auth/removeRole")
+            .hasRole("ADMIN")
 
-        http.addFilterBefore(authTokenFilter(), UsernamePasswordAuthenticationFilter::class.java)
+            // WalletService
+
+            // WarehouseService
+
+            // OrderService
+
+
+        http
+            .cors().disable()
+            .csrf().disable()
+            .httpBasic().disable()
+            .formLogin().disable()
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+            .exceptionHandling()
+            .authenticationEntryPoint(handler)
+            .accessDeniedHandler(handler)
+
+        http
+                .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+
+        return http.build()
     }
+}
+
+private val handler = {
+        swe: ServerWebExchange, e : Exception ->
+    val body = ErrorMessageDTO(e.message, HttpStatus.UNAUTHORIZED)
+    swe.response.statusCode = HttpStatus.UNAUTHORIZED
+    swe.response.headers.contentType = MediaType.APPLICATION_JSON
+    swe.response.writeWith(
+        Jackson2JsonEncoder().encode(
+            Mono.just(body),
+            swe.response.bufferFactory(),
+            ResolvableType.forInstance(body),
+            MediaType.APPLICATION_JSON,
+            Hints.from(Hints.LOG_PREFIX_HINT, swe.logPrefix)
+        )
+    )
 }

@@ -1,33 +1,32 @@
 package it.polito.wa2.catalogservice.entities
 
+import org.bson.types.ObjectId
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.Indexed
+import org.springframework.data.mongodb.core.mapping.DBRef
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.Field
+import org.springframework.data.mongodb.core.mapping.event.BeforeSaveCallback
+import org.springframework.stereotype.Component
 import java.time.LocalDateTime
-import javax.persistence.*
+import java.time.format.DateTimeFormatter
+import javax.validation.constraints.NotNull
 
 
-@Entity
-@Table(name = "email_verification_token")
-class EmailVerificationToken : EntityBase<Long>() {
+@Document(collection = "email_verification_token")
+class EmailVerificationToken(
+    val expiryDate: String = LocalDateTime.now().plusHours(24).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
+){
+    @Id
+    @field:NotNull
+    var id: String? = null
 
-    var id = getId()
-
-    @Column(name = "token", nullable = false, unique = true)
+    @field:NotNull
+    @Indexed(unique=true)
     lateinit var token: String
 
-    @OneToOne(targetEntity = User::class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "user_id")
-    lateinit var user: User
-
-    @Column(
-        name = "timestamp",
-        nullable = false,
-        columnDefinition = "TIMESTAMP",
-        updatable = false
-    )
-    lateinit var expiryDate: LocalDateTime
-
-    @PrePersist
-    fun prePersistCreatedAt() {
-        this.expiryDate = LocalDateTime.now().plusHours(24)
-    }
+    @field:NotNull
+    lateinit var userId: String
 
 }
+

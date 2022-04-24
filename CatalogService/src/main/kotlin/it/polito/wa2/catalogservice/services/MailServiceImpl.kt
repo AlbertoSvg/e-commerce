@@ -1,6 +1,6 @@
-package it.polito.wa2.catalogservice.services.implementations
+package it.polito.wa2.catalogservice.services
 
-import it.polito.wa2.catalogservice.services.interfaces.MailService
+import it.polito.wa2.catalogservice.services.MailService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 
 
 @Service
-class MailServiceImpl : MailService {
+class MailServiceImpl: MailService {
 
     @Autowired
     private lateinit var mailSender: JavaMailSender
@@ -16,7 +16,6 @@ class MailServiceImpl : MailService {
     override fun sendMessage(toMail: String, subject: String, mailBody: String) {
 
         val message = SimpleMailMessage()
-
         message.setFrom("doNotReply@gmail.com")
         message.setTo(toMail)
         message.setSubject(subject)
@@ -28,3 +27,4 @@ class MailServiceImpl : MailService {
 
     }
 }
+
