@@ -5,6 +5,7 @@ import java.math.BigDecimal
 class WarehouseWalletDTO(
     override val id: Long?,
     override val amount: BigDecimal,
-    val warehouseId: Long
+    val warehouseId: Long,
+    override val owner: Long
 ): WalletDTO {
 }

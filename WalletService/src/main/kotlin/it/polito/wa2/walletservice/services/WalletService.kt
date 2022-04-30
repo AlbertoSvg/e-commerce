@@ -14,14 +14,14 @@ interface WalletService {
      * @param customerId The id of the customer (Long)
      * @return A WalletDTO.
      */
-    fun addWalletToCustomer(customerId: Long): WalletDTO
+    fun addWalletToCustomer(customerId: Long, userId: String?, roles: String?): WalletDTO
 
     /** ### Description:
      * Get a wallet using the wallet ID (Long)
      * @param walletId The id of the wallet (Long)
      * @return A WalletDTO.
      */
-    fun getWalletById(walletId: Long): WalletDTO
+    fun getWalletById(walletId: Long, userId: String?, roles: String?): WalletDTO
 
     /** ### Description:
      * Perform a transaction moving money between two wallets

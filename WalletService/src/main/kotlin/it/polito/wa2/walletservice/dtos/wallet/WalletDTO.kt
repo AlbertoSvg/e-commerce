@@ -6,7 +6,7 @@ interface WalletDTO{
 
     val id: Long?
     val amount: BigDecimal
-    //val owner: Long TODO: da gestire
+    val owner: Long
 
 }
 

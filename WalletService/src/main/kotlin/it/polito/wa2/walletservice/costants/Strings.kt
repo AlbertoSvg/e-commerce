@@ -10,6 +10,7 @@ object Strings {
     const val INSUFFICIENT_CREDIT = "Insufficient Credit"
     const val CUSTOMER_NOT_MATCHING = "Authenticated customer does not match owner of new wallet"
     const val WALLET_DOES_NOT_BELONG = "Authenticated user does not own specified wallet"
+    const val UNAUTHORIZED_USER = "User is not authorized"
 
     const val CUSTOMER_NOT_FOUND = "Customer not found!"
 

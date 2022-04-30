@@ -4,15 +4,14 @@ import it.polito.wa2.walletservice.costants.Strings.DESTINATION_WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.INSUFFICIENT_CREDIT
 import it.polito.wa2.walletservice.costants.Strings.SENDER_WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.TRANSACTION_NOT_FOUND
+import it.polito.wa2.walletservice.costants.Strings.UNAUTHORIZED_USER
 import it.polito.wa2.walletservice.costants.Strings.WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
 import it.polito.wa2.walletservice.dtos.wallet.WalletDTO
-import it.polito.wa2.walletservice.entities.Transaction
-import it.polito.wa2.walletservice.entities.Wallet
-import it.polito.wa2.walletservice.entities.toTransactionDTO
-import it.polito.wa2.walletservice.entities.toWalletDTO
+import it.polito.wa2.walletservice.entities.*
 import it.polito.wa2.walletservice.repositories.TransactionRepository
 import it.polito.wa2.walletservice.repositories.WalletRepository
+import it.polito.wa2.walletservice.utils.Utils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -36,24 +35,30 @@ class WalletServiceImpl() : WalletService {
     @Autowired
     private lateinit var transactionRepository: TransactionRepository
 
-    override fun addWalletToCustomer(customerId: Long): WalletDTO {
-        val wallet = Wallet()
-        //TODO: da gestire
-        /*val username = SecurityContextHolder.getContext().authentication.name
-        val optCustomer = customerRepository.findById(customerId)
-        if (optCustomer.isEmpty) throw RuntimeException(CUSTOMER_NOT_FOUND)
-        val customer = optCustomer.get()
-        if (customer.user.username != username) throw RuntimeException(Strings.CUSTOMER_NOT_MATCHING)
-        customer.addWallet(wallet)
+    @Autowired
+    private lateinit var utils: Utils
 
-         */
+    override fun addWalletToCustomer(customerId: Long, userId: String?, roles: String?): WalletDTO {
+        if (!utils.isAuthorized(roles, userId, customerId))
+            throw RuntimeException(UNAUTHORIZED_USER)
+        val wallet = Wallet().also {
+            it.amount = BigDecimal(0)
+            it.owner = customerId
+            it.walletType = WalletType.CUSTOMER
+        }
         return walletRepository.save(wallet).toWalletDTO()
     }
 
-    override fun getWalletById(walletId: Long): WalletDTO {
-        val wallet = walletRepository.findById(walletId)
-        if (wallet.isPresent) throw RuntimeException(WALLET_NOT_FOUND)
-        return wallet.get().toWalletDTO()
+    override fun getWalletById(walletId: Long, userId: String?, roles: String?): WalletDTO {
+        val walletOpt = walletRepository.findById(walletId)
+        if (walletOpt.isPresent) {
+            if (utils.isAuthorized(roles, userId, walletOpt.get().owner))
+                return walletOpt.get().toWalletDTO()
+            else
+                throw RuntimeException(UNAUTHORIZED_USER)
+        }
+        else
+            throw RuntimeException(WALLET_NOT_FOUND)
     }
 
     override fun executeTransaction(walletSource: Long, walletDest: Long, amount: BigDecimal): TransactionDTO {

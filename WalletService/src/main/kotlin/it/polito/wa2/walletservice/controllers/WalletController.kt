@@ -8,6 +8,7 @@ import it.polito.wa2.walletservice.costants.Strings.RESOURCE_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.SENDER_WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.TRANSACTION_EXECUTION_FAILED
 import it.polito.wa2.walletservice.costants.Strings.TRANSACTION_NOT_FOUND
+import it.polito.wa2.walletservice.costants.Strings.UNAUTHORIZED_USER
 import it.polito.wa2.walletservice.costants.Strings.WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.WRONG_PARAMETERS
 import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
@@ -43,17 +44,21 @@ class WalletController {
      * @return wallet DTO and status 201 (CREATED)
      */
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @ResponseBody
-    fun createWalletByCustomerID(@RequestBody body: Map<String, Long>): ResponseEntity<Any> {
-        return try {
-            val temp = body["customerId"]
-            if (temp != null) {
-                ResponseEntity.status(HttpStatus.CREATED).body(walletService.addWalletToCustomer(temp))
-            } else throw RuntimeException()
+    fun createWalletByCustomerID(
+        @RequestBody body: Map<String, Long>,
+        @RequestHeader("userId") userId: String?,
+        @RequestHeader("roles") roles: String?
+    ): ResponseEntity<Any> {
+        try {
+            val customerId = body["customerId"]
+            return ResponseEntity.status(HttpStatus.CREATED).body(walletService.addWalletToCustomer(customerId!!, userId, roles))
         } catch (e: RuntimeException) {
-            if (e.message == CUSTOMER_NOT_FOUND) ResponseEntity.badRequest().body(CUSTOMER_NOT_FOUND)
-            else ResponseEntity.badRequest().body(WRONG_PARAMETERS)
+            if (e.message == CUSTOMER_NOT_FOUND)
+                return ResponseEntity.badRequest().body(CUSTOMER_NOT_FOUND)
+            if (e.message == UNAUTHORIZED_USER)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+            else
+                return ResponseEntity.badRequest().body(WRONG_PARAMETERS)
         }
     }
 
@@ -68,14 +73,19 @@ class WalletController {
      * @return walletDTO and status 200 (OK)
      */
     @GetMapping("/{walletId}")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    fun getWalletById(@PathVariable("walletId") walletId: Long): ResponseEntity<Any> {
-        return try {
-            val walletDTO = walletService.getWalletById(walletId)
-            ResponseEntity.ok(walletDTO)
+    fun getWalletById(
+        @PathVariable("walletId") walletId: Long,
+        @RequestHeader("userId") userId: String?,
+        @RequestHeader("roles") roles: String?
+    ): ResponseEntity<Any> {
+        try {
+            val walletDTO = walletService.getWalletById(walletId, userId, roles)
+            return ResponseEntity.ok(walletDTO)
         } catch (e: RuntimeException) {
-            ResponseEntity.badRequest().body(WALLET_NOT_FOUND)
+            if (e.message == UNAUTHORIZED_USER)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(WALLET_NOT_FOUND)
+            else
+                return ResponseEntity.badRequest().body(WRONG_PARAMETERS)
         }
     }
 
@@ -95,8 +105,6 @@ class WalletController {
      * @return transactionDTO and status 201 (CREATED)
      */
     @PostMapping("/{walletId}/transactions")
-    @ResponseStatus(HttpStatus.CREATED)
-    @ResponseBody
     fun createTransaction(
         @PathVariable("walletId") senderWalletId: Long,
         @RequestBody @Valid transaction: TransactionDTO,
@@ -140,8 +148,6 @@ class WalletController {
      *  the total number of items and the current page number) and status 200 (OK)
      */
     @GetMapping("/{walletId}/transactions")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     fun getTransactionsByDateRange(
         @PathVariable("walletId") senderWalletId: Long,
         @RequestParam(name = "pageNo", defaultValue = "0") pageNo: Int,
@@ -179,8 +185,6 @@ class WalletController {
      * @return transactionDTO and status OK (200)
      */
     @GetMapping("/{walletId}/transactions/{transactionId}")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     fun getTransactionById(
         @PathVariable("walletId") walletId: Long,
         @PathVariable("transactionId") transactionId: Long
