@@ -1,12 +1,15 @@
 package it.polito.wa2.walletservice.repositories
 
 import it.polito.wa2.walletservice.entities.Transaction
+import it.polito.wa2.walletservice.entities.Wallet
+import it.polito.wa2.walletservice.enum.TransactionType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
@@ -47,5 +50,12 @@ interface TransactionRepository : PagingAndSortingRepository<Transaction, Long> 
      * @return A container object (of Transaction) which may or may not contain a non-null value.
      */
     override fun findById(id: Long): Optional<Transaction>
+
+    @Transactional(readOnly = true)
+    fun findByWalletSenderAndOperationRefAndType(
+        walletSender: Wallet,
+        operationRef: String,
+        type: TransactionType = TransactionType.ORDER_PAYMENT
+    ):List<Transaction>
 
 }

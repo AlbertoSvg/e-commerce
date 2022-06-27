@@ -1,7 +1,10 @@
 package it.polito.wa2.walletservice.services
 
 import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
+import it.polito.wa2.walletservice.dtos.transaction.request.RechargeTransactionDTO
 import it.polito.wa2.walletservice.dtos.wallet.WalletDTO
+import it.polito.wa2.walletservice.entities.Transaction
+import it.polito.wa2.walletservice.entities.Wallet
 import org.springframework.data.domain.Page
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -14,14 +17,15 @@ interface WalletService {
      * @param customerId The id of the customer (Long)
      * @return A WalletDTO.
      */
-    fun addWalletToCustomer(customerId: Long, userId: String?, roles: String?): WalletDTO
+    fun addWalletToCustomer(customerId: Long, userId: String, roles: String?, checkAuthorization: Boolean = true): WalletDTO
 
     /** ### Description:
      * Get a wallet using the wallet ID (Long)
      * @param walletId The id of the wallet (Long)
-     * @return A WalletDTO.
+     * @return A Wallet.
      */
-    fun getWalletById(walletId: Long, userId: String?, roles: String?): WalletDTO
+    fun getWalletById(walletId: Long, userId: String?, roles: String?, checkAuthorization: Boolean = true): Wallet
+
 
     /** ### Description:
      * Perform a transaction moving money between two wallets
@@ -30,7 +34,7 @@ interface WalletService {
      * @param amount The total amount of money that will be transferred  (BigDecimal)
      * @return A TransactionDTO.
      */
-    fun executeTransaction(walletSource: Long, walletDest: Long, amount: BigDecimal): TransactionDTO
+    fun orderTransaction(transaction: Transaction, checkAuthorization: Boolean = true): Transaction
 
     /** ### Description:
      * Get all the wallet's transactions in a given date range by walletID (Long)
@@ -55,6 +59,8 @@ interface WalletService {
      * @param transactionId The transaction ID (Long)
      * @return A TransactionDTO.
      */
-    fun getTransaction(walletId: Long, transactionId: Long): TransactionDTO
+    fun getTransaction(walletId: Long, transactionId: Long, userId: String, roles: String, checkAuthorization: Boolean = true): TransactionDTO
+
+    fun rechargeTransaction(receiverWalletId: Long, rechargeTransaction: RechargeTransactionDTO, roles: String?) : TransactionDTO
 
 }

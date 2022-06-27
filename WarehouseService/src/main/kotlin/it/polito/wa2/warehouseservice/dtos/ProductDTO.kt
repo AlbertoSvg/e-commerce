@@ -1,9 +1,10 @@
 package it.polito.wa2.warehouseservice.dtos
 
-data class ProductDTO (
-    val id: Long?,
-    var category: String?,
-    var description: String?,
-    var price: Float?,
-    val pictureUrl: String?
+import java.math.BigDecimal
+
+data class ProductDTO(
+    val name: String? = null,
+    val description: String? = null,
+    val category: String? = null,
+    val price: BigDecimal? = null
 )

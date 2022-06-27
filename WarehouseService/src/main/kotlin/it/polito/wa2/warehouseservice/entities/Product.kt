@@ -1,8 +1,11 @@
 package it.polito.wa2.warehouseservice.entities
 
-import it.polito.wa2.warehouseservice.dtos.ProductDTO
+import it.polito.wa2.warehouseservice.dtos.ResponseProductDTO
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.time.LocalDateTime
 import javax.persistence.*
-import javax.validation.constraints.Positive
+import javax.validation.constraints.*
 
 //NOTA: se aggiungiamo campi all'entità, modifcare DTO, service, controller, validators per coerenza
 
@@ -11,6 +14,13 @@ import javax.validation.constraints.Positive
 class Product : EntityBase<Long>(){
 
     var id = getId()
+
+    @Column(
+        name = "name",
+        nullable = false,
+        updatable = true
+    )
+    var name: String? = null
 
     @Column(
         name = "category",
@@ -26,13 +36,17 @@ class Product : EntityBase<Long>(){
     )
     var description: String? = null
 
-    @Positive
+    @DecimalMin("0.00", inclusive = true)
+    @Digits(fraction = 2, integer = 10)
     @Column(
         name = "price",
         nullable = false,
         updatable = true
     )
-    var price: Float? = null
+    var price: BigDecimal? = null
+    set(value) {
+        field = value?.setScale(2, RoundingMode.HALF_EVEN)
+    }
 
     @Lob
     @Column(
@@ -41,15 +55,52 @@ class Product : EntityBase<Long>(){
     )
     var picture: ByteArray? = null
 
-    @OneToMany(mappedBy = "product")
-    val productsStocks = mutableSetOf<ProductStock>()
+    @Min(0)
+    @Column(
+        name = "num_stars",
+        nullable = false
+    )
+    var numStars: Long? = null
 
-    fun toProductDTO() : ProductDTO =
-        ProductDTO(
+    @Min(0)
+    @Column(
+        name = "num_ratings",
+        nullable = false,
+    )
+    var numRatings: Long? = null
+
+    @Column(
+        name = "creation_date",
+        nullable = false,
+        columnDefinition = "TIMESTAMP(3)",
+        updatable = false
+    )
+    var creationDate: LocalDateTime? = null
+
+    @PrePersist
+    fun prePersistCreatedAt() {
+        this.creationDate = LocalDateTime.now()
+    }
+
+    @OneToMany(mappedBy = "product")
+    val productsStocks = mutableSetOf<ProductStock>() //todo: Ci serve davvero?
+    fun toProductDTO() : ResponseProductDTO {
+        val rating =
+            if(numRatings == 0L)
+                BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_EVEN)
+            else BigDecimal
+                .valueOf(numStars!!.toDouble()/numRatings!!.toDouble())
+                .setScale(2, RoundingMode.HALF_EVEN)
+        return ResponseProductDTO(
             id = id,
+            name = name,
             category = category,
             description = description,
             price = price,
-            pictureUrl = "/products/$id/picture"
+            pictureUrl = "/products/$id/picture",
+            rating,
+            creationDate,
+            "/products/$id/comments"
         )
+    }
 }

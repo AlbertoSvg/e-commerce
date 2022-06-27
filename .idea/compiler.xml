@@ -1,9 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="1.6">
+    <bytecodeTargetLevel target="1.8">
+      <module name="CatalogService" target="11" />
+      <module name="CatalogService.main" target="11" />
+      <module name="CatalogService.test" target="11" />
+      <module name="Eureka" target="11" />
+      <module name="Eureka.main" target="11" />
+      <module name="Eureka.test" target="11" />
       <module name="FinalProject2.main" target="1.8" />
       <module name="FinalProject2.test" target="1.8" />
+      <module name="OrderService" target="11" />
+      <module name="OrderService.main" target="11" />
+      <module name="OrderService.test" target="11" />
+      <module name="saga" target="11" />
+      <module name="saga.main" target="11" />
+      <module name="saga.test" target="11" />
+      <module name="wa2-finalproject.Saga.main" target="11" />
+      <module name="wa2-finalproject.Saga.test" target="11" />
+      <module name="WalletService" target="11" />
+      <module name="WalletService.main" target="11" />
+      <module name="WalletService.test" target="11" />
+      <module name="WarehouseService" target="11" />
+      <module name="WarehouseService.main" target="11" />
+      <module name="WarehouseService.test" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

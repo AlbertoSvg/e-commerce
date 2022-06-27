@@ -1,6 +1,7 @@
 package it.polito.wa2.warehouseservice.controllers
 
 import it.polito.wa2.warehouseservice.constants.Values
+import it.polito.wa2.warehouseservice.dtos.AddCommentDTO
 import it.polito.wa2.warehouseservice.dtos.ProductDTO
 import it.polito.wa2.warehouseservice.services.interfaces.ProductService
 import it.polito.wa2.warehouseservice.services.interfaces.WarehouseService
@@ -13,6 +14,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import javax.validation.Valid
 import javax.validation.constraints.Min
 
 @RestController
@@ -152,4 +154,35 @@ class ProductController {
             return ResponseEntity.badRequest().body(e.message)
         }
     }
+
+    //Una persona può aggiungere un commento solo se ha comprato il prodotto
+    @PostMapping("/{productId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun addComment(@RequestBody @Valid comment: AddCommentDTO): ResponseEntity<Any> {
+        return try{
+            ResponseEntity.status(HttpStatus.CREATED).body(productService.addComment(comment))
+        } catch(e: RuntimeException) {
+            ResponseEntity.badRequest().body(e.message)
+        }
+    }
+
+    @GetMapping("/{productId}/comments")
+    @ResponseStatus(HttpStatus.OK)
+    fun getComments(@PathVariable("productId") productId: Long,
+                    @RequestParam("pageNo", defaultValue = Values.DEFAULT_PAGE_NO) @Min(0) pageNo: Int,
+                    @RequestParam("pageSize", defaultValue = Values.DEFAULT_PAGE_SIZE) @Min(1) pageSize: Int
+    ): ResponseEntity<Any> {
+        return try{
+            val comments =  productService.getCommentsByProductId(productId, pageNo, pageSize)
+            val response = hashMapOf<String, Any>()
+            response["comments"] = comments.content
+            response["currentPage"] = pageNo
+            response["totalItems"] = comments.totalElements
+            response["totalPages"] = comments.totalPages
+            ResponseEntity.ok(response)
+        } catch(e: RuntimeException) {
+            ResponseEntity.badRequest().body(e.message)
+        }
+    }
+
 }

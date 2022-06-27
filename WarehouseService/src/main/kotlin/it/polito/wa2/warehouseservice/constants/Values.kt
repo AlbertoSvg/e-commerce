@@ -1,5 +1,5 @@
 package it.polito.wa2.warehouseservice.constants
-
+import it.polito.wa2.saga.entities.OutboxEvent
 object Values {
     const val PRODUCT_STOCK_NOT_FOUND = "Product stock not found"
     const val INVALID_PRODUCT_STOCK_REPRESENTATION = "Provided product stock representation is invalid"

@@ -1,8 +1,10 @@
 package it.polito.wa2.walletservice.repositories
 
 import it.polito.wa2.walletservice.entities.Wallet
+import it.polito.wa2.walletservice.entities.WalletType
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Repository
@@ -21,4 +23,11 @@ interface WalletRepository : CrudRepository<Wallet, Long> {
      */
     override fun findById(id: Long): Optional<Wallet>
 
+    fun findByOwner(owner: Long): Optional<Wallet>
+
+    @Transactional(readOnly = true)
+    fun findByIdAndOwnerAndWalletType(id:Long, owner: Long, walletType: WalletType):Wallet?
+
+    @Transactional(readOnly = true)
+    fun findByWalletTypeAndOwner(walletType: WalletType, owner: Long): Wallet?
 }

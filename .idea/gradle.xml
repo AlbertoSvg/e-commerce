@@ -5,55 +5,16 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/CatalogService" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/CatalogService" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/Eureka" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/Eureka" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/OrderService" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/OrderService" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/WalletService" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/WalletService" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$/WarehouseService" />
         <option name="modules">
           <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/CatalogService" />
+            <option value="$PROJECT_DIR$/Eureka" />
+            <option value="$PROJECT_DIR$/OrderService" />
+            <option value="$PROJECT_DIR$/WalletService" />
             <option value="$PROJECT_DIR$/WarehouseService" />
+            <option value="$PROJECT_DIR$/saga" />
           </set>
         </option>
       </GradleProjectSettings>

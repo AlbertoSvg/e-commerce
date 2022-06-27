@@ -12,6 +12,7 @@ import it.polito.wa2.walletservice.costants.Strings.UNAUTHORIZED_USER
 import it.polito.wa2.walletservice.costants.Strings.WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.WRONG_PARAMETERS
 import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
+import it.polito.wa2.walletservice.dtos.transaction.request.RechargeTransactionDTO
 import it.polito.wa2.walletservice.services.WalletService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.format.annotation.DateTimeFormat
@@ -46,8 +47,8 @@ class WalletController {
     @PostMapping
     fun createWalletByCustomerID(
         @RequestBody body: Map<String, Long>,
-        @RequestHeader("userId") userId: String?,
-        @RequestHeader("roles") roles: String?
+        @RequestHeader("userId") userId: String,
+        @RequestHeader("roles") roles: String
     ): ResponseEntity<Any> {
         try {
             val customerId = body["customerId"]
@@ -89,32 +90,19 @@ class WalletController {
         }
     }
 
-    /**
-     *  ### Description:
-     *  Create a transaction taking the amount of money set in the body from the given wallet and
-     *  transferring it to a second walletId, always defined in the body.
-     *
-     *  ### Mapping:
-     *  /wallet/{walletId}/transaction
-     *
-     * @param senderWalletId the sender wallet id (Long)
-     * @param transaction It contains the info about the wallet receiving the amount specified in the body.
-     * The amount must be positive (greater then zero) and the receiver must be not-null.
-     * If a customer reloads his wallet, the wallet id referring to the sender will be null.
-     *
-     * @return transactionDTO and status 201 (CREATED)
-     */
     @PostMapping("/{walletId}/transactions")
-    fun createTransaction(
-        @PathVariable("walletId") senderWalletId: Long,
-        @RequestBody @Valid transaction: TransactionDTO,
+    fun rechargeTransaction(
+        @PathVariable("walletId") receiverWalletId: Long,
+        @RequestBody @Valid transaction: RechargeTransactionDTO,
+        @RequestHeader("userId") userId: String?,
+        @RequestHeader("roles") roles: String?,
         bindingResult: BindingResult
     ): ResponseEntity<Any> {
         try {
             return if (bindingResult.hasErrors()) ResponseEntity.badRequest().body(WRONG_PARAMETERS)
             else {
                 val returnedTransactionDTO =
-                    walletService.executeTransaction(senderWalletId, transaction.receiver, transaction.amount)
+                    walletService.rechargeTransaction(receiverWalletId, transaction, roles)
                 ResponseEntity.status(HttpStatus.CREATED).body(returnedTransactionDTO)
             }
         } catch (e: RuntimeException) {
@@ -127,6 +115,7 @@ class WalletController {
             else ResponseEntity.badRequest().body(TRANSACTION_EXECUTION_FAILED)
         }
     }
+
 
     /**
      *  ### Description:
@@ -187,10 +176,12 @@ class WalletController {
     @GetMapping("/{walletId}/transactions/{transactionId}")
     fun getTransactionById(
         @PathVariable("walletId") walletId: Long,
-        @PathVariable("transactionId") transactionId: Long
+        @PathVariable("transactionId") transactionId: Long,
+        @RequestHeader("userId") userId: String,
+        @RequestHeader("roles") roles: String
     ): ResponseEntity<Any> {
         return try {
-            val transactionDTO = walletService.getTransaction(walletId, transactionId)
+            val transactionDTO = walletService.getTransaction(walletId, transactionId, userId, roles)
             ResponseEntity.ok(transactionDTO)
         } catch (e: RuntimeException) {
             if (e.message == TRANSACTION_NOT_FOUND) ResponseEntity.badRequest().body(TRANSACTION_NOT_FOUND)

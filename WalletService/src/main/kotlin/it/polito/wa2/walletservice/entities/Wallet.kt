@@ -1,11 +1,8 @@
 package it.polito.wa2.walletservice.entities
 
-import it.polito.wa2.walletservice.dtos.wallet.CustomerWalletDTO
 import it.polito.wa2.walletservice.dtos.wallet.WalletDTO
-import it.polito.wa2.walletservice.dtos.wallet.WarehouseWalletDTO
 import java.math.BigDecimal
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 import javax.validation.constraints.PositiveOrZero
 
 @Entity
@@ -30,10 +27,10 @@ class Wallet : EntityBase<Long>() {
 
  */
 
-    @Column(nullable = false)
+    @Column(name = "owner", nullable = false)
     var owner: Long = -1
 
-    @Column(nullable = false)
+    @Column(name = "type", nullable = false)
     lateinit var walletType: WalletType
 
     @OneToMany(
@@ -64,12 +61,9 @@ class Wallet : EntityBase<Long>() {
 
 // Extension function
 fun Wallet.toWalletDTO(): WalletDTO {
-    return when(walletType) {
-        WalletType.WAREHOUSE-> WarehouseWalletDTO(getId(), amount, owner)
-        WalletType.CUSTOMER-> CustomerWalletDTO(getId(), amount, owner)
-    }
+    return WalletDTO(id, amount, owner, walletType)
 }
 
 enum class WalletType{
-    CUSTOMER, WAREHOUSE
+    CUSTOMER, ECOMMERCE
 }

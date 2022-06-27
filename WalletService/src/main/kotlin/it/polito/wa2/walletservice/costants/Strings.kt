@@ -17,7 +17,8 @@ object Strings {
     const val TRANSACTION_NOT_FOUND = "Transaction not found"
     const val INVALID_TRANSACTION = "Invalid transaction"
     const val TRANSACTION_EXECUTION_FAILED = "Transaction execution failed!"
-
+    const val ORDER_PAYMENT_FAILED = "Failed to process order payment"
+    const val OUT_OF_MONEY = "Not enough money in the wallet"
     const val USER_NOT_FOUND = "Could not find user"
     const val TOKEN_NOT_FOUND = "Could not find token"
     const val TOKEN_EXPIRED ="Token has expired"

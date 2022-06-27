@@ -20,5 +20,7 @@ data class TransactionDTO(
 
     val timestamp: LocalDateTime?,
 
-    val type: TransactionType
+    val type: TransactionType,
+
+    val operationRef:String
 )
