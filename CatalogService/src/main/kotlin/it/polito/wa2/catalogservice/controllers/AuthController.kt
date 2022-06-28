@@ -59,7 +59,7 @@ class AuthController() {
             body.name,
             body.surname,
             body.address
-        ).awaitSingle()
+        )
         return ResponseEntity.status(HttpStatus.CREATED).body(user)
     }
 
@@ -83,6 +83,7 @@ class AuthController() {
 
         return ResponseEntity.ok().body(
             JwtResponseDTO(
+                userDetails.getId(),
                 userDetails.username,
                 userDetails.getEmail(),
                 jwt,
@@ -97,6 +98,7 @@ class AuthController() {
     suspend fun registrationConfirm(
         @RequestParam(name = "token", defaultValue = "") token: String
     ): ResponseEntity<Any> {
+        println("AAAAAAAAA")
         userDetailsServiceImpl.confirmUserRegistration(token)
         return ResponseEntity.accepted().body("Successfully registered...Redirect: /auth/signin")
     }

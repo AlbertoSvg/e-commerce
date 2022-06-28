@@ -40,7 +40,7 @@ class NotificationServiceImpl : NotificationService {
 
         return user.flatMap {
             if (it != null) {
-                verificationToken.userId = it.id!!
+                verificationToken.userId = it.id.toString() //TODO: changed
                 verificationToken.token = UUID.randomUUID().toString()
                 return@flatMap emailVerificationTokenRepository.save(verificationToken)
                     .map { e -> e.token }.switchIfEmpty { Mono.error(RuntimeException(FAILED_TO_SAVE_OBJECT)) }
@@ -51,7 +51,6 @@ class NotificationServiceImpl : NotificationService {
 
     @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
     fun removeExpiredTokens() {
-
         CoroutineScope(Dispatchers.IO).launch {
             removeTokensAndUsers()
         }
@@ -67,10 +66,10 @@ class NotificationServiceImpl : NotificationService {
         val expiredTokensFlux = emailVerificationTokenRepository.findAllByExpiryDateBefore(currentTime)
         val expiredTokens = expiredTokensFlux.collectList().awaitSingle()
         expiredTokens.forEach { evt ->
-                            user = userRepository.findById(evt.userId).awaitSingle()
+                            user = userRepository.findById(evt.userId.toLong()).awaitSingle()
                             if (user != null) {
                                 if (!user!!.isEnabled) {
-                                    usersToDelete.add(user!!.id!!)
+                                    usersToDelete.add(user!!.id!!.toString()) //TODO: changed
                                 }
                             }
                         }
@@ -80,7 +79,7 @@ class NotificationServiceImpl : NotificationService {
         if(n>0)
             println("$n tokens removed")
         // ...and users
-        usersToDelete.forEach { userRepository.deleteById(it)
+        usersToDelete.forEach { userRepository.deleteById(it.toLong())
             .onErrorMap { RuntimeException(FAILED_TO_SAVE_OBJECT) }
             .doOnSuccess { println("user removed") }
             .subscribe()}

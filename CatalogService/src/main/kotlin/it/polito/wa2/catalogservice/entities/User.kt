@@ -5,7 +5,7 @@ import it.polito.wa2.catalogservice.enum.RoleName
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-//import javax.persistence.*
+import javax.annotation.processing.Generated
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
@@ -16,7 +16,7 @@ class User {
 
     @Id
     @field:NotNull
-    var id: String? = null
+    var id: Long? = null
 
     @field:NotBlank(message = "Username is required")
     @field:NotNull

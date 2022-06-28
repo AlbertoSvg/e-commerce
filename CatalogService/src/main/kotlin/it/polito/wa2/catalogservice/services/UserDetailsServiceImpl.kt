@@ -1,6 +1,7 @@
 package it.polito.wa2.catalogservice.services
 
 import it.polito.wa2.catalogservice.constants.Strings.FAILED_TO_SAVE_OBJECT
+import it.polito.wa2.catalogservice.constants.Strings.REGISTRATION_FAILED
 import it.polito.wa2.catalogservice.constants.Strings.TOKEN_EXPIRED
 import it.polito.wa2.catalogservice.constants.Strings.TOKEN_NOT_FOUND
 import it.polito.wa2.catalogservice.constants.Strings.USER_NOT_FOUND
@@ -11,9 +12,12 @@ import it.polito.wa2.catalogservice.entities.toUserDTO
 import it.polito.wa2.catalogservice.enum.RoleName
 import it.polito.wa2.catalogservice.repositories.EmailVerificationTokenRepository
 import it.polito.wa2.catalogservice.repositories.UserRepository
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cloud.gateway.support.NotFoundException
 import org.springframework.security.authentication.BadCredentialsException
@@ -59,7 +63,7 @@ class UserDetailsServiceImpl : ReactiveUserDetailsService {
         return userRepository.findByEmail(email).hasElement()
     }
 
-    fun registerUser(
+    suspend fun registerUser(
         username: String,
         password: String,
         email: String,
@@ -68,7 +72,7 @@ class UserDetailsServiceImpl : ReactiveUserDetailsService {
         name: String,
         surname: String,
         address: String
-    ): Mono<UserDetailsDTO> {
+    ): UserDetailsDTO {
         try {
             val user = User().apply {
                 this.username = username
@@ -81,13 +85,15 @@ class UserDetailsServiceImpl : ReactiveUserDetailsService {
                 this.address = address
             }
 
-            return userRepository.save(user).map {
+            val returnUser = withContext(Dispatchers.IO) {
+                userRepository.save(user).block()
+            } ?: throw RuntimeException(REGISTRATION_FAILED)
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    sendEmail(it)
-                }
-                it.toUserDTO()
+            CoroutineScope(Dispatchers.IO).launch {
+                sendEmail(returnUser)
             }
+
+            return returnUser.toUserDTO()
 
         } catch (e: RuntimeException) {
             throw RuntimeException(e.message)
@@ -117,13 +123,16 @@ class UserDetailsServiceImpl : ReactiveUserDetailsService {
             if (dateTime.isBefore(dateTimeNow))
                 throw BadCredentialsException(TOKEN_EXPIRED)
             else {
-                val user = userRepository.findById(verificationToken.userId).awaitSingle()
+                val user = userRepository.findById(verificationToken.userId.toLong()).awaitSingle()
                     ?: throw UsernameNotFoundException(USER_NOT_FOUND)
                 user.isEnabled = true
                 userRepository.save(user).switchIfEmpty(Mono.error(RuntimeException("Enabling User Failed")))
                     .subscribe()
                 emailVerificationTokenRepository.deleteById(verificationToken.id!!)
-                    .switchIfEmpty(Mono.error(RuntimeException("Token Cancellation Failed"))).subscribe()
+                    .onErrorMap {
+                        RuntimeException("Token Cancellation Failed")
+                    }.subscribe()
+
                 return
             }
         } else

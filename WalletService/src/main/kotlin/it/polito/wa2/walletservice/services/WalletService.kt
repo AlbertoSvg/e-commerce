@@ -50,7 +50,9 @@ interface WalletService {
         from: LocalDateTime,
         to: LocalDateTime,
         pageNo: Int,
-        size: Int
+        size: Int,
+        roles: String?,
+        userId: String?
     ): Page<TransactionDTO>
 
     /** ### Description:

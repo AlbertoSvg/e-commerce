@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient
 import org.springframework.context.annotation.Bean
+import org.springframework.transaction.annotation.EnableTransactionManagement
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
@@ -21,6 +22,7 @@ import java.math.BigDecimal
         SagaApplication::class
     ])
 @EnableEurekaClient
+@EnableTransactionManagement
 class WalletServiceApplication{
 
     @Bean

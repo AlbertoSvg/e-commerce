@@ -12,4 +12,5 @@ object Strings {
     const val USERNAME_ALREADY_EXISTS = "Username already exists"
     const val PASSWORD_DO_NOT_MATCH = "Passwords do not match"
     const val EMAIL_ALREADY_EXISTS = "Email already exists"
+    const val REGISTRATION_FAILED = "User registration failed"
 }

@@ -25,7 +25,7 @@ import javax.validation.Valid
 
 
 @RestController
-@RequestMapping("/wallet")
+@RequestMapping("/wallets")
 class WalletController {
 
     @Autowired
@@ -142,12 +142,14 @@ class WalletController {
         @RequestParam(name = "pageNo", defaultValue = "0") pageNo: Int,
         @RequestParam(name = "size", defaultValue = "10") size: Int,
         @RequestParam(name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS") from: LocalDateTime,
-        @RequestParam(name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS") to: LocalDateTime
+        @RequestParam(name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS") to: LocalDateTime,
+        @RequestHeader("userId") userId: String?,
+        @RequestHeader("roles") roles: String?
     ): ResponseEntity<Any> {
         // ESEMPIO DI GET:
         // GET http://localhost:8090/wallet/3/transactions?pageNo=0&size=2&from=2021-04-13 20:32:09.877&to=2021-04-13 20:35:47.000
         return try {
-            val transactionPageDTO = walletService.getTransactionsByDateRange(senderWalletId, from, to, pageNo, size)
+            val transactionPageDTO = walletService.getTransactionsByDateRange(senderWalletId, from, to, pageNo, size, roles, userId)
             val response = hashMapOf<String, Any>()
 
             response["Transactions"] = transactionPageDTO.content

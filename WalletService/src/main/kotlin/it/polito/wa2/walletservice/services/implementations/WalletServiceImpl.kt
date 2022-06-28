@@ -158,10 +158,15 @@ class WalletServiceImpl() : WalletService {
         from: LocalDateTime,
         to: LocalDateTime,
         pageNo: Int,
-        size: Int
+        size: Int,
+        roles: String?,
+        userId: String?
     ): Page<TransactionDTO> {
         val paging = PageRequest.of(pageNo, size)
-        if (walletRepository.findById(walletId).isPresent) throw RuntimeException(WALLET_NOT_FOUND)
+        val walletOptional = walletRepository.findById(walletId)
+        if (!walletOptional.isPresent) throw RuntimeException(WALLET_NOT_FOUND)
+        if(!utils.isAuthorized(roles,userId,walletOptional.get().owner))
+            throw RuntimeException(UNAUTHORIZED_USER)
         val transactions =
             transactionRepository.findByWalletSenderOrWalletReceiverAndTimestampBetween(walletId, from, to, paging)
         if (transactions.isEmpty) throw  RuntimeException(TRANSACTION_NOT_FOUND)
