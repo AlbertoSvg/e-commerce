@@ -90,19 +90,17 @@ class WalletController {
         }
     }
 
-    @PostMapping("/{walletId}/transactions")
+    @PostMapping("/{walletId}/transactions") //ADMIN ONLY
     fun rechargeTransaction(
         @PathVariable("walletId") receiverWalletId: Long,
         @RequestBody @Valid transaction: RechargeTransactionDTO,
-        @RequestHeader("userId") userId: String?,
-        @RequestHeader("roles") roles: String?,
         bindingResult: BindingResult
     ): ResponseEntity<Any> {
         try {
             return if (bindingResult.hasErrors()) ResponseEntity.badRequest().body(WRONG_PARAMETERS)
             else {
                 val returnedTransactionDTO =
-                    walletService.rechargeTransaction(receiverWalletId, transaction, roles)
+                    walletService.rechargeTransaction(receiverWalletId, transaction)
                 ResponseEntity.status(HttpStatus.CREATED).body(returnedTransactionDTO)
             }
         } catch (e: RuntimeException) {
@@ -142,14 +140,12 @@ class WalletController {
         @RequestParam(name = "pageNo", defaultValue = "0") pageNo: Int,
         @RequestParam(name = "size", defaultValue = "10") size: Int,
         @RequestParam(name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS") from: LocalDateTime,
-        @RequestParam(name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS") to: LocalDateTime,
-        @RequestHeader("userId") userId: String?,
-        @RequestHeader("roles") roles: String?
+        @RequestParam(name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS") to: LocalDateTime
     ): ResponseEntity<Any> {
         // ESEMPIO DI GET:
-        // GET http://localhost:8090/wallet/3/transactions?pageNo=0&size=2&from=2021-04-13 20:32:09.877&to=2021-04-13 20:35:47.000
+        // GET http://localhost:8090/wallets/3/transactions?pageNo=0&size=2&from=2021-04-13 20:32:09.877&to=2021-04-13 20:35:47.000
         return try {
-            val transactionPageDTO = walletService.getTransactionsByDateRange(senderWalletId, from, to, pageNo, size, roles, userId)
+            val transactionPageDTO = walletService.getTransactionsByDateRange(senderWalletId, from, to, pageNo, size)
             val response = hashMapOf<String, Any>()
 
             response["Transactions"] = transactionPageDTO.content
@@ -179,11 +175,9 @@ class WalletController {
     fun getTransactionById(
         @PathVariable("walletId") walletId: Long,
         @PathVariable("transactionId") transactionId: Long,
-        @RequestHeader("userId") userId: String,
-        @RequestHeader("roles") roles: String
     ): ResponseEntity<Any> {
         return try {
-            val transactionDTO = walletService.getTransaction(walletId, transactionId, userId, roles)
+            val transactionDTO = walletService.getTransaction(walletId, transactionId)
             ResponseEntity.ok(transactionDTO)
         } catch (e: RuntimeException) {
             if (e.message == TRANSACTION_NOT_FOUND) ResponseEntity.badRequest().body(TRANSACTION_NOT_FOUND)

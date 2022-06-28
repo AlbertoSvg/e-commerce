@@ -19,14 +19,6 @@ class Wallet : EntityBase<Long>() {
     )
     var amount: BigDecimal = BigDecimal("0.00")
 
-    //TODO: come gestire il customer che è in possesso del wallet visto che i customer(user) sono gestiti nel servizio CatalogService
-/*
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "customer_id", referencedColumnName = "id", nullable = false)
-    lateinit var customer: Customer
-
- */
-
     @Column(name = "owner", nullable = false)
     var owner: Long = -1
 

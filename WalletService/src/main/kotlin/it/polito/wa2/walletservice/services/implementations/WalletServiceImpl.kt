@@ -32,10 +32,7 @@ import java.util.*
 @Service
 @Transactional
 class WalletServiceImpl() : WalletService {
-    //TODO: da gestire
-    /*@Autowired
-    private lateinit var customerRepository: CustomerRepository
-*/
+
     @Autowired
     private lateinit var walletRepository: WalletRepository
 
@@ -80,10 +77,7 @@ class WalletServiceImpl() : WalletService {
     }
 
     //ADMINS ONLY
-    override fun rechargeTransaction(receiverWalletId: Long, rechargeTransaction: RechargeTransactionDTO, roles:String?) : TransactionDTO {
-        if (!utils.isAuthorized(roles, null, null))
-            throw RuntimeException(UNAUTHORIZED_USER)
-
+    override fun rechargeTransaction(receiverWalletId: Long, rechargeTransaction: RechargeTransactionDTO) : TransactionDTO {
         val destinationOptional = walletRepository.findById(receiverWalletId)
         if (!destinationOptional.isPresent) throw RuntimeException(DESTINATION_WALLET_NOT_FOUND)
         val destinationWallet = destinationOptional.get()
@@ -96,6 +90,8 @@ class WalletServiceImpl() : WalletService {
             it.type = TransactionType.RECHARGE
             it.operationRef = UUID.randomUUID().toString()
         }
+
+        //destinationWallet.addRechargeTransaction(transaction) //TODO: DA TESTARE (se funziona aggiungerlo ovunque venga fatta una transazione)
 
         // Update the amount of destinationWallet
         walletRepository.save(destinationWallet)
@@ -140,15 +136,15 @@ class WalletServiceImpl() : WalletService {
 
     }
 
-    override fun getTransaction(walletId: Long, transactionId: Long, userId: String, roles: String, checkAuthorization: Boolean): TransactionDTO {
+    override fun getTransaction(walletId: Long, transactionId: Long): TransactionDTO {
 
         val transactionOptional = transactionRepository.findById(transactionId)
         if (!transactionOptional.isPresent) throw RuntimeException(TRANSACTION_NOT_FOUND)
         val transaction = transactionOptional.get()
-        if(!utils.isAuthorized(roles, userId, transaction.walletSender.owner) && !utils.isAuthorized(roles, userId, transaction.walletReceiver.owner) )
-            throw RuntimeException(UNAUTHORIZED_USER)
+//        if(!utils.isAuthorized(roles, userId, transaction.walletSender.owner) && !utils.isAuthorized(roles, userId, transaction.walletReceiver.owner) )
+//            throw RuntimeException(UNAUTHORIZED_USER)
         if (transaction.walletSender.id != walletId && transaction.walletReceiver.id != walletId)
-            throw RuntimeException(WALLET_NOT_FOUND)
+            throw RuntimeException("There is no transaction with this ID=$transactionId for this wallet")
 
         return transaction.toTransactionDTO()
     }
@@ -159,15 +155,13 @@ class WalletServiceImpl() : WalletService {
         from: LocalDateTime,
         to: LocalDateTime,
         pageNo: Int,
-        size: Int,
-        roles: String?,
-        userId: String?
+        size: Int
     ): Page<TransactionDTO> {
         val paging = PageRequest.of(pageNo, size)
         val walletOptional = walletRepository.findById(walletId)
         if (!walletOptional.isPresent) throw RuntimeException(WALLET_NOT_FOUND)
-        if(!utils.isAuthorized(roles,userId,walletOptional.get().owner))
-            throw RuntimeException(UNAUTHORIZED_USER)
+//        if(!utils.isAuthorized(roles,userId,walletOptional.get().owner))
+//            throw RuntimeException(UNAUTHORIZED_USER)
         val transactions =
             transactionRepository.findByWalletSenderOrWalletReceiverAndTimestampBetween(walletId, from, to, paging)
         if (transactions.isEmpty) throw  RuntimeException(TRANSACTION_NOT_FOUND)

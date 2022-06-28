@@ -50,9 +50,7 @@ interface WalletService {
         from: LocalDateTime,
         to: LocalDateTime,
         pageNo: Int,
-        size: Int,
-        roles: String?,
-        userId: String?
+        size: Int
     ): Page<TransactionDTO>
 
     /** ### Description:
@@ -61,8 +59,8 @@ interface WalletService {
      * @param transactionId The transaction ID (Long)
      * @return A TransactionDTO.
      */
-    fun getTransaction(walletId: Long, transactionId: Long, userId: String, roles: String, checkAuthorization: Boolean = true): TransactionDTO
+    fun getTransaction(walletId: Long, transactionId: Long): TransactionDTO
 
-    fun rechargeTransaction(receiverWalletId: Long, rechargeTransaction: RechargeTransactionDTO, roles: String?) : TransactionDTO
+    fun rechargeTransaction(receiverWalletId: Long, rechargeTransaction: RechargeTransactionDTO) : TransactionDTO
 
 }

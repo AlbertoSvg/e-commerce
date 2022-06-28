@@ -1,8 +1,11 @@
 package it.polito.wa2.walletservice
 
 import it.polito.wa2.saga.SagaApplication
+import it.polito.wa2.walletservice.entities.Transaction
 import it.polito.wa2.walletservice.entities.Wallet
 import it.polito.wa2.walletservice.entities.WalletType
+import it.polito.wa2.walletservice.enum.TransactionType
+import it.polito.wa2.walletservice.repositories.TransactionRepository
 import it.polito.wa2.walletservice.repositories.WalletRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
@@ -27,7 +30,8 @@ class WalletServiceApplication{
 
     @Bean
     fun createEcommerceWallet(
-        @Autowired walletRepository: WalletRepository
+        @Autowired walletRepository: WalletRepository,
+        @Autowired transactionRepository: TransactionRepository
     ): CommandLineRunner {
         return CommandLineRunner {
 
@@ -48,6 +52,33 @@ class WalletServiceApplication{
             w2.owner = 4
             w2.amount = BigDecimal("0")
             walletRepository.save(w2)
+
+            var t : Transaction
+
+            for(j in 0..10){
+                t = Transaction().also {
+                    it.amount = BigDecimal("20")
+                    it.walletReceiver = w1
+                    it.walletSender = w1
+                    it.operationRef = "Recharge"
+                    it.type = TransactionType.RECHARGE
+                }
+                transactionRepository.save(t)
+            }
+
+            for(i in 0..10){
+                t = Transaction().also {
+                    it.amount = BigDecimal("10")
+                    it.walletReceiver = wallet
+                    it.walletSender = w2
+                    it.operationRef = "ORDER"
+                    it.type = TransactionType.ORDER_PAYMENT
+                }
+                transactionRepository.save(t)
+            }
+
+
+
 
         }
 
