@@ -11,14 +11,9 @@ import reactor.core.publisher.Mono
 @RestController
 class FailureController {
 
-    @GetMapping("/failure1")
-    fun failure1(): String {
-        return "Service1 is unavailable, try later"
-    }
-
-    @GetMapping("/failure2")
-    fun failure2(): String {
-        return "Service2 is unavailable, try later"
+    @GetMapping("/failure")
+    fun failure(): String {
+        return "The service is unavailable, try later"
     }
 
 }

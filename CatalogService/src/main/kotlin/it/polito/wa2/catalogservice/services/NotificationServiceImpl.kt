@@ -40,7 +40,7 @@ class NotificationServiceImpl : NotificationService {
 
         return user.flatMap {
             if (it != null) {
-                verificationToken.userId = it.id.toString() //TODO: changed
+                verificationToken.userId = it.id.toString()
                 verificationToken.token = UUID.randomUUID().toString()
                 return@flatMap emailVerificationTokenRepository.save(verificationToken)
                     .map { e -> e.token }.switchIfEmpty { Mono.error(RuntimeException(FAILED_TO_SAVE_OBJECT)) }
@@ -69,7 +69,7 @@ class NotificationServiceImpl : NotificationService {
                             user = userRepository.findById(evt.userId.toLong()).awaitSingle()
                             if (user != null) {
                                 if (!user!!.isEnabled) {
-                                    usersToDelete.add(user!!.id!!.toString()) //TODO: changed
+                                    usersToDelete.add(user!!.id!!.toString())
                                 }
                             }
                         }

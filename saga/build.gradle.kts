@@ -29,6 +29,7 @@ dependencies {
 	implementation("org.springframework.kafka:spring-kafka")
 	implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
 
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("javax.validation:validation-api")
 	implementation("io.jsonwebtoken:jjwt-api:0.11.2")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.2")

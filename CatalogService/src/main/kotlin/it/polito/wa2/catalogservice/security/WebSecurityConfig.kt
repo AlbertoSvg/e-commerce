@@ -45,7 +45,7 @@ class WebfluxSecurityConfig {
     ): SecurityWebFilterChain {
 
         http
-            // auth
+             //auth
             .authorizeExchange()
             .pathMatchers("/auth/signin")
             .permitAll()
@@ -71,11 +71,10 @@ class WebfluxSecurityConfig {
             .hasRole("ADMIN")
 
             // WalletService
-
-            // WarehouseService
-
-            // OrderService
-
+            .and()
+            .authorizeExchange()
+            .pathMatchers("/wallets/**")
+            .authenticated()
 
         http
             .cors().disable()

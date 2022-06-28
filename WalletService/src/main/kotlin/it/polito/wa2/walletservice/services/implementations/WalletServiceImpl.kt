@@ -74,8 +74,9 @@ class WalletServiceImpl() : WalletService {
             else
                 throw RuntimeException(UNAUTHORIZED_USER)
         }
-        else
+        else {
             throw RuntimeException(WALLET_NOT_FOUND)
+        }
     }
 
     //ADMINS ONLY

@@ -84,7 +84,7 @@ class WalletController {
             return ResponseEntity.ok(walletDTO)
         } catch (e: RuntimeException) {
             if (e.message == UNAUTHORIZED_USER)
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(WALLET_NOT_FOUND)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(UNAUTHORIZED_USER)
             else
                 return ResponseEntity.badRequest().body(WRONG_PARAMETERS)
         }

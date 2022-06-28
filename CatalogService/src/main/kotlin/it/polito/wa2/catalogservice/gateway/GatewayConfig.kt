@@ -28,40 +28,39 @@ class GatewayConfig {
                     it -> it.path(true,"/warehouse/**")
                 .filters { f ->
                     f.circuitBreaker { it ->
-                        it.setFallbackUri("forward:/failure1") //forward to local url failure1
+                        it.setFallbackUri("forward:/failure") //forward to local url failure1
                     }
 
                     f.rewritePath("/warehouse", "/")
                     f.filter(filter)
                 }
 
-                .uri("lb://warehouse") //who im going to contact (lb = loadbalancing)
+                .uri("lb://warehouse-service") //who im going to contact (lb = loadbalancing)
             }
             .route("WalletService") {
-                    it -> it.path(true,"/wallet/**")
+                    it -> it.path(true,"/wallets/**")
                 .filters { f ->
                     f.circuitBreaker { it ->
-                        it.setFallbackUri("forward:/failure1") //forward to local url failure1
+                        it.setFallbackUri("forward:/failure") //forward to local url failure1
                     }
 
-                    f.rewritePath("/wallet", "/")
+                    //f.rewritePath("/wallet", "/")
                     f.filter(filter)
                 }
-
-                .uri("lb://wallet") //who im going to contact (lb = loadbalancing)
+                .uri("lb://wallet-service") //who im going to contact (lb = loadbalancing)
             }
             .route("OrderService") {
                     it -> it.path(true,"/order/**")
                 .filters { f ->
                     f.circuitBreaker { it ->
-                        it.setFallbackUri("forward:/failure1") //forward to local url failure1
+                        it.setFallbackUri("forward:/failure") //forward to local url failure1
                     }
 
                     f.rewritePath("/order", "/")
                     f.filter(filter)
                 }
 
-                .uri("lb://order") //who im going to contact (lb = loadbalancing)
+                .uri("lb://order-service") //who im going to contact (lb = loadbalancing)
             }
             .build()
     }

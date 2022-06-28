@@ -36,6 +36,19 @@ class WalletServiceApplication{
             wallet.owner = -1
             wallet.amount = BigDecimal("1000000")
             walletRepository.save(wallet)
+
+            val w1 = Wallet()
+            w1.walletType = WalletType.CUSTOMER
+            w1.owner = 3
+            w1.amount = BigDecimal("300")
+            walletRepository.save(w1)
+
+            val w2 = Wallet()
+            w2.walletType = WalletType.CUSTOMER
+            w2.owner = 4
+            w2.amount = BigDecimal("0")
+            walletRepository.save(w2)
+
         }
 
     }
