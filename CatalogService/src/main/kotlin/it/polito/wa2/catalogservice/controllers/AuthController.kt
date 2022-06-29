@@ -8,6 +8,9 @@ import it.polito.wa2.catalogservice.dtos.*
 import it.polito.wa2.catalogservice.enum.RoleName
 import it.polito.wa2.catalogservice.security.JwtUtils
 import it.polito.wa2.catalogservice.services.UserDetailsServiceImpl
+import it.polito.wa2.catalogservice.webclient.ClientRequest
+import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -98,7 +101,6 @@ class AuthController() {
     suspend fun registrationConfirm(
         @RequestParam(name = "token", defaultValue = "") token: String
     ): ResponseEntity<Any> {
-        println("AAAAAAAAA")
         userDetailsServiceImpl.confirmUserRegistration(token)
         return ResponseEntity.accepted().body("Successfully registered...Redirect: /auth/signin")
     }

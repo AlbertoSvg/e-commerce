@@ -1,6 +1,5 @@
-package it.polito.wa2.walletservice.dtos.wallet
+package it.polito.wa2.catalogservice.dtos
 
-import it.polito.wa2.walletservice.entities.WalletType
 import java.math.BigDecimal
 
 data class WalletDTO(

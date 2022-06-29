@@ -3,7 +3,7 @@ package it.polito.wa2.walletservice.costants
 object Strings {
     const val WRONG_PARAMETERS = "Wrong parameters!"
     const val RESOURCE_NOT_FOUND = "Resource not found"
-
+    const val INTERNAL_SERVER_ERROR = "Internal server error"
     const val WALLET_NOT_FOUND = "Wallet not found!"
     const val SENDER_WALLET_NOT_FOUND = "Sender Wallet not found"
     const val DESTINATION_WALLET_NOT_FOUND = "Destination Wallet not found"
@@ -15,6 +15,7 @@ object Strings {
     const val CUSTOMER_NOT_FOUND = "Customer not found!"
 
     const val TRANSACTION_NOT_FOUND = "Transaction not found"
+    const val TRANSACTION_NOT_FOUND_FOR_WALLET = "Transaction not found for this wallet"
     const val INVALID_TRANSACTION = "Invalid transaction"
     const val TRANSACTION_EXECUTION_FAILED = "Transaction execution failed!"
     const val ORDER_PAYMENT_FAILED = "Failed to process order payment"

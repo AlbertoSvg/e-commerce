@@ -8,6 +8,7 @@ import it.polito.wa2.walletservice.costants.Strings.ORDER_PAYMENT_FAILED
 import it.polito.wa2.walletservice.costants.Strings.OUT_OF_MONEY
 import it.polito.wa2.walletservice.costants.Strings.SENDER_WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.TRANSACTION_NOT_FOUND
+import it.polito.wa2.walletservice.costants.Strings.TRANSACTION_NOT_FOUND_FOR_WALLET
 import it.polito.wa2.walletservice.costants.Strings.UNAUTHORIZED_USER
 import it.polito.wa2.walletservice.costants.Strings.WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
@@ -43,13 +44,8 @@ class WalletServiceImpl() : WalletService {
     private lateinit var utils: Utils
 
     override fun addWalletToCustomer(
-        customerId: Long,
-        userId: String,
-        roles: String?,
-        checkAuthorization: Boolean
+        customerId: Long
     ): WalletDTO {
-        if (checkAuthorization && !utils.isAuthorized(roles, userId, customerId))
-            throw RuntimeException(UNAUTHORIZED_USER)
         val wallet = Wallet().also {
             it.walletType = WalletType.CUSTOMER
             it.amount = BigDecimal(0)
@@ -144,7 +140,7 @@ class WalletServiceImpl() : WalletService {
 //        if(!utils.isAuthorized(roles, userId, transaction.walletSender.owner) && !utils.isAuthorized(roles, userId, transaction.walletReceiver.owner) )
 //            throw RuntimeException(UNAUTHORIZED_USER)
         if (transaction.walletSender.id != walletId && transaction.walletReceiver.id != walletId)
-            throw RuntimeException("There is no transaction with this ID=$transactionId for this wallet")
+            throw RuntimeException(TRANSACTION_NOT_FOUND_FOR_WALLET)
 
         return transaction.toTransactionDTO()
     }

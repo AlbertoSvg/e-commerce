@@ -53,7 +53,7 @@ class Wallet : EntityBase<Long>() {
 
 // Extension function
 fun Wallet.toWalletDTO(): WalletDTO {
-    return WalletDTO(id, amount, owner, walletType)
+    return WalletDTO(id, amount, owner, walletType.name)
 }
 
 enum class WalletType{

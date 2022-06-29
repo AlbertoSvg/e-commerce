@@ -7,14 +7,18 @@ import it.polito.wa2.catalogservice.constants.Strings.TOKEN_NOT_FOUND
 import it.polito.wa2.catalogservice.constants.Strings.USER_NOT_FOUND
 import it.polito.wa2.catalogservice.constants.Strings.WRONG_PARAMETERS
 import it.polito.wa2.catalogservice.dtos.UserDetailsDTO
+import it.polito.wa2.catalogservice.dtos.WalletCreationRequest
+import it.polito.wa2.catalogservice.dtos.WalletDTO
 import it.polito.wa2.catalogservice.entities.User
 import it.polito.wa2.catalogservice.entities.toUserDTO
 import it.polito.wa2.catalogservice.enum.RoleName
 import it.polito.wa2.catalogservice.repositories.EmailVerificationTokenRepository
 import it.polito.wa2.catalogservice.repositories.UserRepository
+import it.polito.wa2.catalogservice.webclient.ClientRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
@@ -48,6 +52,8 @@ class UserDetailsServiceImpl : ReactiveUserDetailsService {
     @Autowired
     private lateinit var emailVerificationTokenRepository: EmailVerificationTokenRepository
 
+    @Autowired
+    lateinit var request: ClientRequest
 
     override fun findByUsername(username: String): Mono<UserDetails> {
         val user: Mono<User?> = userRepository.findByUsername(username)
@@ -133,6 +139,10 @@ class UserDetailsServiceImpl : ReactiveUserDetailsService {
                         RuntimeException("Token Cancellation Failed")
                     }.subscribe()
 
+                val uri = "http://wallet-service:8100/wallets"
+                val walletCreationRequest = WalletCreationRequest(user.id!!)
+                request.doPost(uri, walletCreationRequest, WalletCreationRequest::class.java, WalletDTO::class.java).awaitSingle()
+                println("Wallet created for Customer ${user.id!!}")
                 return
             }
         } else

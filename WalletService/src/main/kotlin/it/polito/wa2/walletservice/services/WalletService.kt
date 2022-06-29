@@ -17,7 +17,7 @@ interface WalletService {
      * @param customerId The id of the customer (Long)
      * @return A WalletDTO.
      */
-    fun addWalletToCustomer(customerId: Long, userId: String, roles: String?, checkAuthorization: Boolean = true): WalletDTO
+    fun addWalletToCustomer(customerId: Long): WalletDTO
 
     /** ### Description:
      * Get a wallet using the wallet ID (Long)

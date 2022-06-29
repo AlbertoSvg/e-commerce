@@ -3,6 +3,7 @@ package it.polito.wa2.walletservice.controllers
 import it.polito.wa2.walletservice.costants.Strings.CUSTOMER_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.DESTINATION_WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.INSUFFICIENT_CREDIT
+import it.polito.wa2.walletservice.costants.Strings.INTERNAL_SERVER_ERROR
 import it.polito.wa2.walletservice.costants.Strings.INVALID_TRANSACTION
 import it.polito.wa2.walletservice.costants.Strings.RESOURCE_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.SENDER_WALLET_NOT_FOUND
@@ -13,6 +14,8 @@ import it.polito.wa2.walletservice.costants.Strings.WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.WRONG_PARAMETERS
 import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
 import it.polito.wa2.walletservice.dtos.transaction.request.RechargeTransactionDTO
+import it.polito.wa2.walletservice.dtos.wallet.WalletDTO
+import it.polito.wa2.walletservice.entities.WalletType
 import it.polito.wa2.walletservice.services.WalletService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.format.annotation.DateTimeFormat
@@ -20,6 +23,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import javax.validation.Valid
 
@@ -46,20 +50,13 @@ class WalletController {
      */
     @PostMapping
     fun createWalletByCustomerID(
-        @RequestBody body: Map<String, Long>,
-        @RequestHeader("userId") userId: String,
-        @RequestHeader("roles") roles: String
+        @RequestBody body: Map<String, Long>
     ): ResponseEntity<Any> {
         try {
             val customerId = body["customerId"]
-            return ResponseEntity.status(HttpStatus.CREATED).body(walletService.addWalletToCustomer(customerId!!, userId, roles))
-        } catch (e: RuntimeException) {
-            if (e.message == CUSTOMER_NOT_FOUND)
-                return ResponseEntity.badRequest().body(CUSTOMER_NOT_FOUND)
-            if (e.message == UNAUTHORIZED_USER)
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-            else
-                return ResponseEntity.badRequest().body(WRONG_PARAMETERS)
+            return ResponseEntity.status(HttpStatus.CREATED).body(walletService.addWalletToCustomer(customerId!!))
+        } catch (e: Exception) {
+            return ResponseEntity.internalServerError().body(INTERNAL_SERVER_ERROR)
         }
     }
 
