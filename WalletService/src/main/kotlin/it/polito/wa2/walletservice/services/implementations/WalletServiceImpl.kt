@@ -96,7 +96,7 @@ class WalletServiceImpl() : WalletService {
     }
 
 
-    override fun orderTransaction(transaction: Transaction, checkAuthorization: Boolean): Transaction {
+    override fun orderTransaction(transaction: Transaction): Transaction {
         val amount = transaction.amount
 
         when(transaction.type) {

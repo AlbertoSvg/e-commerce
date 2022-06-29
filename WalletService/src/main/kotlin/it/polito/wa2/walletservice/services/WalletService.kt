@@ -34,7 +34,7 @@ interface WalletService {
      * @param amount The total amount of money that will be transferred  (BigDecimal)
      * @return A TransactionDTO.
      */
-    fun orderTransaction(transaction: Transaction, checkAuthorization: Boolean = true): Transaction
+    fun orderTransaction(transaction: Transaction): Transaction
 
     /** ### Description:
      * Get all the wallet's transactions in a given date range by walletID (Long)

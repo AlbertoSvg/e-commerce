@@ -101,7 +101,7 @@ class OrderRequestServiceImpl : OrderRequestService {
                     it.operationRef = orderId
                 }
 
-                walletService.orderTransaction(transaction, true)
+                walletService.orderTransaction(transaction)
             }
 
             return OrderStatusDTO(
