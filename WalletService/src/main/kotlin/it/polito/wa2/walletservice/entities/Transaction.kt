@@ -1,5 +1,7 @@
 package it.polito.wa2.walletservice.entities
 
+import com.fasterxml.jackson.annotation.JsonFilter
+import com.fasterxml.jackson.annotation.JsonIgnore
 import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
 import it.polito.wa2.walletservice.enum.TransactionType
 import java.math.BigDecimal

@@ -4,6 +4,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Bean
 import org.springframework.kafka.annotation.KafkaListenerConfigurer
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.config.KafkaListenerEndpointRegistrar
@@ -48,6 +49,7 @@ abstract class BaseKafkaConsumerConfig<T>(private val myClass: Class<T>) : Kafka
     }
 
 
+    @Bean
     fun concurrentKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, T>? {
         val factory: ConcurrentKafkaListenerContainerFactory<String, T> =
             ConcurrentKafkaListenerContainerFactory<String, T>()

@@ -81,6 +81,16 @@ class WebfluxSecurityConfig {
             .pathMatchers("/wallets/**") //all the other apis are only for ADMINS
             .hasRole("ADMIN")
 
+            //WarehouseService
+            .and()
+            .authorizeExchange()
+            .pathMatchers(HttpMethod.GET,"/products") //TODO: DA CONTROLLARE SE FUNZIONA!!!
+            .permitAll()
+            .and()
+            .authorizeExchange()
+            .pathMatchers(HttpMethod.GET,"/products/{productId}") //TODO: DA CONTROLLARE SE FUNZIONA!!!
+            .permitAll()
+
         http
             .cors().disable()
             .csrf().disable()

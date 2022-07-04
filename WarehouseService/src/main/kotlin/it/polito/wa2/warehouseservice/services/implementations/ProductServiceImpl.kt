@@ -1,10 +1,12 @@
 package it.polito.wa2.warehouseservice.services.implementations
 
 import it.polito.wa2.warehouseservice.constants.Values
+import it.polito.wa2.warehouseservice.constants.Values.CATEGORY_NOT_FOUND
 import it.polito.wa2.warehouseservice.dtos.AddCommentDTO
 import it.polito.wa2.warehouseservice.dtos.ProductDTO
 import it.polito.wa2.warehouseservice.dtos.CommentDTO
 import it.polito.wa2.warehouseservice.dtos.ResponseProductDTO
+import it.polito.wa2.warehouseservice.entities.Category
 import it.polito.wa2.warehouseservice.entities.Product
 import it.polito.wa2.warehouseservice.repositories.ProductRepository
 import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
@@ -33,21 +35,34 @@ class ProductServiceImpl: ProductService {
         if (category == null) {
             products = productRepository.findAll(paging)
         }
-        else
-            products = productRepository.findAllByCategory(category, paging)
-        return products.map { it.toProductDTO() }
+        else {
+            val categoryName : Category
+            try {
+                categoryName = Category.valueOf(category)
+            } catch (e: IllegalArgumentException){
+                throw RuntimeException(CATEGORY_NOT_FOUND)
+            }
+            products = productRepository.findAllByCategory(categoryName, paging)
+        }
+        return products.map { p -> p.toProductDTO().also { it.totalProductQty = productStockRepository.getTotalQuantityByProductId(it.id!!)} }
     }
 
     override fun getProductById(productId: Long): ResponseProductDTO {
         val product = productRepository.findById(productId)
         if (product.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
-        return product.get().toProductDTO()
+        return product.get().toProductDTO().also { it.totalProductQty = productStockRepository.getTotalQuantityByProductId(it.id!!) }
     }
 
     override fun createProduct(productDTO: ProductDTO): ResponseProductDTO {
+        val categoryName : Category
+        try {
+            categoryName = Category.valueOf(productDTO.category!!)
+        } catch (e: IllegalArgumentException){
+            throw RuntimeException(CATEGORY_NOT_FOUND)
+        }
         val product = Product().also {
             it.name = productDTO.name
-            it.category = productDTO.category
+            it.category = categoryName
             it.description = productDTO.description
             it.price = productDTO.price
             it.numRatings = 0
@@ -59,11 +74,18 @@ class ProductServiceImpl: ProductService {
     override fun updateOrCreateProduct(productId: Long, productDTO: ProductDTO): ResponseProductDTO {
         val productOpt = productRepository.findById(productId)
         val product: Product
+        val categoryName : Category
+        try {
+            categoryName = Category.valueOf(productDTO.category!!)
+        } catch (e: IllegalArgumentException){
+            throw RuntimeException(CATEGORY_NOT_FOUND)
+        }
         if (productOpt.isPresent) {
             product = productOpt.get()
+
             product.also {
                 it.name = productDTO.name
-                it.category = productDTO.category
+                it.category = categoryName
                 it.description = productDTO.description
                 it.price = productDTO.price
             }
@@ -71,7 +93,7 @@ class ProductServiceImpl: ProductService {
         else {
             product = Product().also {
                 it.name = productDTO.name
-                it.category = productDTO.category
+                it.category = categoryName
                 it.description = productDTO.description
                 it.price = productDTO.price
             }
@@ -79,14 +101,22 @@ class ProductServiceImpl: ProductService {
         return productRepository.save(product).toProductDTO()
     }
 
-    override fun updateProduct(productId: Long, responseProductDTO: ProductDTO): ResponseProductDTO {
+    override fun updateProduct(productId: Long, productDTO: ProductDTO): ResponseProductDTO {
         val productOpt = productRepository.findById(productId)
         if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
         val product = productOpt.get()
-        if (responseProductDTO.name != null) product.name = responseProductDTO.name
-        if (responseProductDTO.category != null) product.category = responseProductDTO.category
-        if (responseProductDTO.description != null) product.description = responseProductDTO.description
-        if (responseProductDTO.price != null) product.price = responseProductDTO.price
+        if (productDTO.name != null) product.name = productDTO.name
+        if (productDTO.category != null) {
+            val categoryName : Category
+            try {
+                categoryName = Category.valueOf(productDTO.category)
+            } catch (e: IllegalArgumentException){
+                throw RuntimeException(CATEGORY_NOT_FOUND)
+            }
+            product.category = categoryName
+        }
+        if (productDTO.description != null) product.description = productDTO.description
+        if (productDTO.price != null) product.price = productDTO.price
         return productRepository.save(product).toProductDTO()
     }
 

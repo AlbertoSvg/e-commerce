@@ -39,16 +39,6 @@ class Wallet : EntityBase<Long>() {
     )
     var recharges = mutableSetOf<Transaction>()
 
-    fun addPurchaseTransaction(t: Transaction) {
-        t.walletSender = this
-        purchases.add(t)
-    }
-
-    fun addRechargeTransaction(t: Transaction) {
-        t.walletReceiver = this
-        recharges.add(t)
-    }
-
 }
 
 // Extension function

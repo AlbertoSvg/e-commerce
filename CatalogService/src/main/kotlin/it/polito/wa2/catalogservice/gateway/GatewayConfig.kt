@@ -24,14 +24,27 @@ class GatewayConfig {
     fun routes(builder: RouteLocatorBuilder) : RouteLocator {
         return builder
             .routes()
-            .route("WarehouseService") {
-                    it -> it.path(true,"/warehouse/**")
+            .route("WarehouseService - Products") {
+                    it -> it.path(true,"/products/**")
                 .filters { f ->
                     f.circuitBreaker { it ->
                         it.setFallbackUri("forward:/failure") //forward to local url failure1
                     }
 
-                    f.rewritePath("/warehouse", "/")
+                    //f.rewritePath("/warehouse", "/")
+                    f.filter(filter)
+                }
+
+                .uri("lb://warehouse-service") //who im going to contact (lb = loadbalancing)
+            }
+            .route("WarehouseService - Warehouses") {
+                    it -> it.path(true,"/warehouses/**")
+                .filters { f ->
+                    f.circuitBreaker { it ->
+                        it.setFallbackUri("forward:/failure") //forward to local url failure1
+                    }
+
+                    //f.rewritePath("/warehouse", "/")
                     f.filter(filter)
                 }
 

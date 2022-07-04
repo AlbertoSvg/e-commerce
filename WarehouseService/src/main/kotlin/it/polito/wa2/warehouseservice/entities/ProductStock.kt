@@ -15,7 +15,7 @@ class ProductStock: EntityBase<Long>() {
     var warehouse: Warehouse? = null
 
     @ManyToOne
-    @JoinColumn(name = "product")
+    @JoinColumn(name = "product",  referencedColumnName = "id")
     var product: Product? = null
 
     @Column(name = "product_qty")

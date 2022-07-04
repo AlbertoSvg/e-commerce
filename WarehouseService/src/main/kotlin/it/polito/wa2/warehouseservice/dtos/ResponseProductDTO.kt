@@ -12,5 +12,6 @@ data class ResponseProductDTO (
     val pictureUrl: String?,
     val rating: BigDecimal?,
     val creationDate: LocalDateTime?,
-    val commentsUrl: String?
+    val commentsUrl: String?,
+    var totalProductQty: Long? = null
 )

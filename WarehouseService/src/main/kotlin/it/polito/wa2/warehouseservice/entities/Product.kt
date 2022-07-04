@@ -1,6 +1,9 @@
 package it.polito.wa2.warehouseservice.entities
 
 import it.polito.wa2.warehouseservice.dtos.ResponseProductDTO
+import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
@@ -27,7 +30,7 @@ class Product : EntityBase<Long>(){
         nullable = false,
         updatable = true
     )
-    var category: String? = null
+    var category: Category? = null
 
     @Column(
         name = "description",
@@ -51,7 +54,8 @@ class Product : EntityBase<Long>(){
     @Lob
     @Column(
         name="picture",
-        updatable = true
+        updatable = true,
+        nullable = true
     )
     var picture: ByteArray? = null
 
@@ -82,19 +86,21 @@ class Product : EntityBase<Long>(){
         this.creationDate = LocalDateTime.now()
     }
 
-    @OneToMany(mappedBy = "product")
-    val productsStocks = mutableSetOf<ProductStock>() //todo: Ci serve davvero?
-    fun toProductDTO() : ResponseProductDTO {
+//    @OneToMany(mappedBy = "product")
+//    val productsStocks = mutableSetOf<ProductStock>() //todo: Ci serve davvero?
+    fun toProductDTO(
+    ) : ResponseProductDTO {
         val rating =
             if(numRatings == 0L)
                 BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_EVEN)
             else BigDecimal
                 .valueOf(numStars!!.toDouble()/numRatings!!.toDouble())
                 .setScale(2, RoundingMode.HALF_EVEN)
+
         return ResponseProductDTO(
             id = id,
             name = name,
-            category = category,
+            category = category?.name,
             description = description,
             price = price,
             pictureUrl = "/products/$id/picture",
@@ -103,4 +109,7 @@ class Product : EntityBase<Long>(){
             "/products/$id/comments"
         )
     }
+}
+enum class Category {
+    HOME, FOOD, TECH, GAMES, CLOTHES, MUSIC, BOOKS, OTHER
 }

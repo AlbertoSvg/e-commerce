@@ -16,6 +16,7 @@ import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
 import it.polito.wa2.walletservice.dtos.transaction.request.RechargeTransactionDTO
 import it.polito.wa2.walletservice.dtos.wallet.WalletDTO
 import it.polito.wa2.walletservice.entities.WalletType
+import it.polito.wa2.walletservice.entities.toWalletDTO
 import it.polito.wa2.walletservice.services.WalletService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.format.annotation.DateTimeFormat
@@ -77,7 +78,7 @@ class WalletController {
         @RequestHeader("roles") roles: String?
     ): ResponseEntity<Any> {
         try {
-            val walletDTO = walletService.getWalletById(walletId, userId, roles)
+            val walletDTO = walletService.getWalletById(walletId, userId, roles).toWalletDTO()
             return ResponseEntity.ok(walletDTO)
         } catch (e: RuntimeException) {
             if (e.message == UNAUTHORIZED_USER)

@@ -86,9 +86,6 @@ class WalletServiceImpl() : WalletService {
             it.type = TransactionType.RECHARGE
             it.operationRef = UUID.randomUUID().toString()
         }
-
-        //destinationWallet.addRechargeTransaction(transaction) //TODO: DA TESTARE (se funziona aggiungerlo ovunque venga fatta una transazione)
-
         // Update the amount of destinationWallet
         walletRepository.save(destinationWallet)
 

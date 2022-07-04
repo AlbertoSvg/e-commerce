@@ -3,6 +3,7 @@ package it.polito.wa2.warehouseservice.controllers
 import it.polito.wa2.warehouseservice.constants.Values
 import it.polito.wa2.warehouseservice.dtos.AddCommentDTO
 import it.polito.wa2.warehouseservice.dtos.ProductDTO
+import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
 import it.polito.wa2.warehouseservice.services.interfaces.ProductService
 import it.polito.wa2.warehouseservice.services.interfaces.WarehouseService
 import it.polito.wa2.warehouseservice.validators.validatePatch
@@ -27,6 +28,7 @@ class ProductController {
     @Autowired
     private lateinit var warehouseService: WarehouseService
 
+
     @GetMapping
     fun getProducts(
         @RequestParam("category", required = false) category: String?,
@@ -43,6 +45,8 @@ class ProductController {
             ResponseEntity.ok(response)
         } catch(e: RuntimeException) {
             ResponseEntity.badRequest().body(e.message)
+        } catch (e: Exception) {
+            ResponseEntity.internalServerError().build()
         }
     }
 
@@ -55,6 +59,8 @@ class ProductController {
             ResponseEntity.ok(productDTO)
         } catch(e: RuntimeException) {
             ResponseEntity.badRequest().body(e.message)
+        } catch (e: Exception) {
+            ResponseEntity.internalServerError().build()
         }
     }
 
