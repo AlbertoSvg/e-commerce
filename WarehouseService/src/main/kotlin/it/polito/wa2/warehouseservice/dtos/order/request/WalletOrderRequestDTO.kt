@@ -1,4 +1,4 @@
-package it.polito.wa2.walletservice.dtos.order.request
+package it.polito.wa2.warehouseservice.dtos.order.request
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo

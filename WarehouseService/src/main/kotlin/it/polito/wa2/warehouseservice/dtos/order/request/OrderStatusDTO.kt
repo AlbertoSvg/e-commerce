@@ -1,4 +1,4 @@
-package it.polito.wa2.saga.dtos
+package it.polito.wa2.warehouseservice.dtos.order.request
 
 import it.polito.wa2.saga.entities.Emittable
 import org.jetbrains.annotations.NotNull

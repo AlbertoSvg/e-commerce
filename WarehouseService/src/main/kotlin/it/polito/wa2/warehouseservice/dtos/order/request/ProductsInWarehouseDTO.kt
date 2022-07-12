@@ -3,11 +3,9 @@ package it.polito.wa2.warehouseservice.dtos.order.request
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
-class WarehouseOrderRequestCancelDTO(
+data class ProductsInWarehouseDTO(
     @field:NotNull
-    override val orderId: String,
+    val warehouseId: Long?,
     @field:NotNull @field:Size(min = 1)
-    val productList: List<ProductsInWarehouseDTO>
-) : WarehouseOrderRequestDTO {
-    override val requestType = RequestType.CANCEL
-}
+    val purchasedProducts: List<PurchaseProductDTO>
+)
