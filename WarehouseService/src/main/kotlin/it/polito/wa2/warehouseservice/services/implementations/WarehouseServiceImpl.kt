@@ -1,19 +1,28 @@
 package it.polito.wa2.warehouseservice.services.implementations
 
+import com.netflix.discovery.converters.Auto
+import it.polito.wa2.saga.services.MessageService
 import it.polito.wa2.warehouseservice.constants.Values
+import it.polito.wa2.warehouseservice.constants.Values.PRODUCT_NOT_FOUND
+import it.polito.wa2.warehouseservice.constants.Values.PRODUCT_STOCK_NOT_FOUND
 import it.polito.wa2.warehouseservice.dtos.ProductStockDTO
 import it.polito.wa2.warehouseservice.dtos.WarehouseDTO
+import it.polito.wa2.warehouseservice.dtos.order.request.ProductWarehouseDTO
+import it.polito.wa2.warehouseservice.dtos.order.request.ProductsInWarehouseDTO
+import it.polito.wa2.warehouseservice.dtos.order.request.PurchaseProductDTO
 import it.polito.wa2.warehouseservice.entities.ProductStock
 import it.polito.wa2.warehouseservice.entities.Warehouse
 import it.polito.wa2.warehouseservice.repositories.ProductRepository
 import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
 import it.polito.wa2.warehouseservice.repositories.WarehouseRepository
+import it.polito.wa2.warehouseservice.services.interfaces.ProductService
 import it.polito.wa2.warehouseservice.services.interfaces.WarehouseService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 
 
 @Service
@@ -28,6 +37,12 @@ class WarehouseServiceImpl(): WarehouseService {
 
     @Autowired
     lateinit var productRepository: ProductRepository
+
+    @Autowired
+    lateinit var productService: ProductService
+
+    @Autowired
+    lateinit var messageService: MessageService
 
     override fun getWarehouses(productId: Long?, pageNo: Int, pageSize: Int) : Page<WarehouseDTO> {
         val paging = PageRequest.of(pageNo, pageSize)
@@ -45,6 +60,12 @@ class WarehouseServiceImpl(): WarehouseService {
         val warehouse = warehouseRepository.findById(warehouseId)
         if (warehouse.isEmpty) throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
         return warehouse.get().toWarehouseDTO()
+    }
+
+    override fun getWarehouseEntityById(warehouseId: Long): Warehouse {
+        val warehouse = warehouseRepository.findById(warehouseId)
+        if (warehouse.isEmpty) throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
+        return warehouse.get()
     }
 
     override fun createWarehouse(warehouseDTO: WarehouseDTO): WarehouseDTO {
@@ -75,21 +96,15 @@ class WarehouseServiceImpl(): WarehouseService {
     }
 
     override fun updateWarehouse(warehouseId: Long, warehouseDTO: WarehouseDTO): WarehouseDTO {
-        val warehouseOpt = warehouseRepository.findById(warehouseId)
-        if (warehouseOpt.isEmpty) throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
-        val warehouse = warehouseOpt.get()
+        val warehouse = getWarehouseEntityById(warehouseId)
         //TODO: se aggiungiamo altri membri al warehouseDTO, aggiungi qui!)
         if (warehouseDTO.name != null) warehouse.name = warehouseDTO.name
         return warehouseRepository.save(warehouse).toWarehouseDTO()
     }
 
     override fun addProductStock(warehouseId: Long, productStockDTO: ProductStockDTO): ProductStockDTO {
-        val warehouseOpt = warehouseRepository.findById(warehouseId)
-        if (warehouseOpt.isEmpty) throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
-        val warehouse = warehouseOpt.get()
-        val productOpt = productRepository.findById(productStockDTO.productId!!)
-        if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
-        val product = productOpt.get()
+        val warehouse = getWarehouseEntityById(warehouseId)
+        val product = productService.getProductEntityById(productStockDTO.productId!!)
         val productStock = ProductStock().also {
             it.product = product
             it.warehouse = warehouse
@@ -99,6 +114,10 @@ class WarehouseServiceImpl(): WarehouseService {
         return productStockRepository.save(productStock).toProductStockDTO()
     }
 
+    private fun sendNotification(productStock: ProductStock){
+//        messageService.publish()
+        //TODO: DA FARE
+    }
     override fun updateOrAddProductStock(
         warehouseId: Long,
         productId: Long,
@@ -106,13 +125,8 @@ class WarehouseServiceImpl(): WarehouseService {
     ): ProductStockDTO {
         val stock: ProductStock
 
-        val warehouseOpt = warehouseRepository.findById(warehouseId)
-        if (warehouseOpt.isEmpty) throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
-        val warehouse = warehouseOpt.get()
-
-        val productOpt = productRepository.findById(productId)
-        if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
-        val product = productOpt.get()
+        val warehouse = getWarehouseEntityById(warehouseId)
+        val product = productService.getProductEntityById(productId)
 
         val stockOpt = productStockRepository.findProductStockByWarehouseAndProduct(warehouse, product)
         if (stockOpt.isEmpty) {
@@ -128,6 +142,7 @@ class WarehouseServiceImpl(): WarehouseService {
             stock.productQty = productStockDTO.productQty
             stock.alarmLevel = productStockDTO.alarmLevel
         }
+        //TODO: sendNotification
         return productStockRepository.save(stock).toProductStockDTO()
     }
 
@@ -136,21 +151,80 @@ class WarehouseServiceImpl(): WarehouseService {
         productId: Long,
         productStockDTO: ProductStockDTO
     ): ProductStockDTO {
-        val warehouseOpt = warehouseRepository.findById(warehouseId)
-        if (warehouseOpt.isEmpty) throw RuntimeException(Values.WAREHOUSE_NOT_FOUND)
-        val warehouse = warehouseOpt.get()
-
-        val productOpt = productRepository.findById(productId)
-        if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
-        val product = productOpt.get()
+        val warehouse = getWarehouseEntityById(warehouseId)
+        val product = productService.getProductEntityById(productId)
 
         val stockOpt = productStockRepository.findProductStockByWarehouseAndProduct(warehouse, product)
         if (stockOpt.isEmpty) throw RuntimeException(Values.PRODUCT_STOCK_NOT_FOUND)
         val stock = stockOpt.get()
         if (productStockDTO.productQty != null) stock.productQty = productStockDTO.productQty
         if (productStockDTO.alarmLevel != null) stock.alarmLevel = productStockDTO.alarmLevel
-
+        //TODO: sendNotification
         return productStockRepository.save(stock).toProductStockDTO()
 
     }
+
+    private fun updateProductStockQuantity(productStock: ProductStock, newQuantity: Long) : ProductStock{
+        productStock.productQty = newQuantity
+        if (newQuantity <= productStock.alarmLevel!!)
+            sendNotification(productStock)
+        return productStock
+    }
+
+    override fun updateQuantityAndRetrieveAmount(purchaseProducts: List<PurchaseProductDTO>): BigDecimal {
+        var price = BigDecimal("0")
+
+        purchaseProducts.forEach{ it ->
+            val product = productService.getProductEntityById(it.productId)
+            val stocks = productStockRepository.findAllByProductAndProductQtyIsGreaterThanEqual(product, it.quantity.toLong())
+            if (stocks.isEmpty())
+                throw  RuntimeException(PRODUCT_STOCK_NOT_FOUND)
+            val chosenStock = stocks.maxByOrNull { stock -> stock.productQty!! - stock.alarmLevel!! }!!
+            updateProductStockQuantity(chosenStock, chosenStock.productQty!! - it.quantity)
+
+            price = price.plus(product.price!! * BigDecimal(it.quantity))
+        }
+        return price
+    }
+
+    override fun getWarehouseHavingProducts(productList: List<PurchaseProductDTO>): List<ProductWarehouseDTO> {
+        val list = mutableListOf<ProductWarehouseDTO>()
+
+        productList.forEach{
+            val product = productService.getProductEntityById(it.productId)
+            val stocks = productStockRepository.findAllByProductAndProductQtyIsGreaterThanEqual(product, it.quantity.toLong())
+            if (stocks.isEmpty())
+                throw  RuntimeException(PRODUCT_STOCK_NOT_FOUND)
+            val chosenStock = stocks.maxByOrNull { stock -> stock.productQty!! - stock.alarmLevel!! }!!
+            list.add(ProductWarehouseDTO(chosenStock.warehouse!!.getId()!!, chosenStock.product!!.getId()!!))
+        }
+
+        return list
+    }
+
+    override fun cancelRequestUpdate(productList: List<ProductsInWarehouseDTO>) {
+        productList.forEach{ productsInWarehouse ->
+            productsInWarehouse.purchasedProducts.forEach{ purchasedProduct ->
+                val warehouse = getWarehouseEntityById(productsInWarehouse.warehouseId!!)
+                val product = productService.getProductEntityById(purchasedProduct.productId)
+                val stockOpt =  productStockRepository.findProductStockByWarehouseAndProduct(warehouse,product)
+                if (  stockOpt.isEmpty ) {
+                    val newStock = ProductStock().also {
+                        it.warehouse = warehouse
+                        it.product = product
+                        it.productQty = purchasedProduct.quantity.toLong()
+                        it.alarmLevel = purchasedProduct.quantity.toLong()
+                    }
+
+                    productStockRepository.save(newStock)
+                } else {
+                    //  updateStockQuantity(stock, stock.quantity + item.amount) // questo invia la mail
+                    val stock = stockOpt.get()
+                    stock.productQty = stock.productQty!! + purchasedProduct.quantity.toLong()
+                    productStockRepository.save(stock)
+                }
+            }
+        }
+    }
+
 }

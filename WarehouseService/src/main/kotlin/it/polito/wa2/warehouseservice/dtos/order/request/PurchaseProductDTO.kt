@@ -8,5 +8,5 @@ data class PurchaseProductDTO(
     val productId: Long,
     @field:NotNull
     @field:Min(1)
-    val amount: Int
+    val quantity: Int
 )

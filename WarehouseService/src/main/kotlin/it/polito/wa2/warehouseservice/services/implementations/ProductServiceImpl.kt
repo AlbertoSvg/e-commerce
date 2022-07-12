@@ -53,6 +53,12 @@ class ProductServiceImpl: ProductService {
         return product.get().toProductDTO().also { it.totalProductQty = productStockRepository.getTotalQuantityByProductId(it.id!!) }
     }
 
+    override fun getProductEntityById(productId: Long): Product {
+        val product = productRepository.findById(productId)
+        if (product.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
+        return product.get()
+    }
+
     override fun createProduct(productDTO: ProductDTO): ResponseProductDTO {
         val categoryName : Category
         try {

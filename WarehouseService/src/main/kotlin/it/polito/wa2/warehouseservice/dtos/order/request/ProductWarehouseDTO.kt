@@ -4,7 +4,7 @@ import javax.validation.constraints.NotNull
 
 data class ProductWarehouseDTO(
     @field:NotNull
-    val warehouseId: String,
+    val warehouseId: Long,
     @field:NotNull
-    val productId: String
+    val productId: Long
 )
