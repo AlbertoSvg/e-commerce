@@ -1,6 +1,5 @@
 package it.polito.wa2.walletservice.controllers
 
-import it.polito.wa2.walletservice.costants.Strings.CUSTOMER_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.DESTINATION_WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.INSUFFICIENT_CREDIT
 import it.polito.wa2.walletservice.costants.Strings.INTERNAL_SERVER_ERROR
@@ -12,10 +11,7 @@ import it.polito.wa2.walletservice.costants.Strings.TRANSACTION_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.UNAUTHORIZED_USER
 import it.polito.wa2.walletservice.costants.Strings.WALLET_NOT_FOUND
 import it.polito.wa2.walletservice.costants.Strings.WRONG_PARAMETERS
-import it.polito.wa2.walletservice.dtos.transaction.TransactionDTO
 import it.polito.wa2.walletservice.dtos.transaction.request.RechargeTransactionDTO
-import it.polito.wa2.walletservice.dtos.wallet.WalletDTO
-import it.polito.wa2.walletservice.entities.WalletType
 import it.polito.wa2.walletservice.entities.toWalletDTO
 import it.polito.wa2.walletservice.services.WalletService
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,7 +20,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import javax.validation.Valid
 
@@ -51,7 +46,7 @@ class WalletController {
      */
     @PostMapping
     fun createWalletByCustomerID(
-        @RequestBody body: Map<String, Long>
+        @RequestBody body: Map<String, Long>,
     ): ResponseEntity<Any> {
         try {
             val customerId = body["customerId"]
