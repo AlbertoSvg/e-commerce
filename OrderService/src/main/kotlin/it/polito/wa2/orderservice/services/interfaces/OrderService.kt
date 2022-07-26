@@ -9,4 +9,5 @@ interface OrderService {
     fun createOrder(orderDTO: OrderDTO): OrderDTO
     fun updateOrder(orderId: Long, orderDTO: OrderDTO): OrderDTO
     fun deleteOrder(orderId: Long)
+    fun getCustomerOrders(userId: String, pageNo: Int, pageSize: Int): Page<OrderDTO>
 }

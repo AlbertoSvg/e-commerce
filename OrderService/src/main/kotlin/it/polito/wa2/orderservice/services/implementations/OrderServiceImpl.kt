@@ -24,9 +24,14 @@ class OrderServiceImpl: OrderService {
     private lateinit var orderItemRepository: OrderItemRepository
 
     override fun getOrders(pageNo: Int, pageSize: Int): Page<OrderDTO> {
-        //TODO: authentication / authorization a sto livello? O meglio autenticare a livello gateway e mandare query parameter con user id?
         val paging = PageRequest.of(pageNo, pageSize)
         val orders: Page<Order> = orderRepository.findAll(paging)
+        return orders.map { order -> order.toOrderDTO() }
+    }
+
+    override fun getCustomerOrders(userId: String, pageNo: Int, pageSize: Int): Page<OrderDTO> {
+        val paging = PageRequest.of(pageNo, pageSize)
+        val orders: Page<Order> = orderRepository.findAllByUserId(userId.toLong(), paging)
         return orders.map { order -> order.toOrderDTO() }
     }
 
@@ -78,9 +83,13 @@ class OrderServiceImpl: OrderService {
     override fun deleteOrder(orderId: Long) {
         if (orderRepository.existsById(orderId)) {
             val order = orderRepository.findById(orderId).get()
+            if (order.status != OrderStatus.PENDING && order.status != OrderStatus.ISSUED)
+                throw RuntimeException(Values.ORDER_NOT_CANCELABLE)
             orderRepository.delete(order)
         }
         else
             throw RuntimeException(Values.ORDER_MOT_FOUND)
     }
+
+
 }
