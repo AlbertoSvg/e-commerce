@@ -43,7 +43,7 @@ class OrderController {
             response["totalItems"] = orderPageDTO.totalElements
             response["totalPages"] = orderPageDTO.totalPages
             return ResponseEntity.ok(response)
-        } catch(e: RuntimeException) { //TODO: diversificazione eccezioni
+        } catch(e: RuntimeException) {
             return ResponseEntity.badRequest().body(e.message)
         }
     }
@@ -110,13 +110,22 @@ class OrderController {
         @RequestHeader("roles") roles: String?
     ): ResponseEntity<Any> {
         try {
+            if (!orderDTO.validatePatch())
+                return ResponseEntity.badRequest().body(Values.INVALID_ORDER_REPRESENTATION)
             if (roles == null)
                 return ResponseEntity.badRequest().body(Values.FAILED_TO_AUTHORIZE)
-            if (!roles.contains(RoleName.ROLE_ADMIN.value))
-                return ResponseEntity.status(401).body(Values.UNAUTHORIZED)
-            if (!orderDTO.validatePatch()) return ResponseEntity.badRequest().body(Values.INVALID_ORDER_REPRESENTATION)
-            val responseOrderDTO = orderService.updateOrder(orderId, orderDTO)
-            return ResponseEntity.ok(responseOrderDTO)
+            if (roles.contains(RoleName.ROLE_ADMIN.value)) {
+                val responseOrderDTO = orderService.updateOrder(orderId, orderDTO)
+                return ResponseEntity.ok(responseOrderDTO)
+            }
+            else if (roles.contains(RoleName.ROLE_CUSTOMER.value) && userId != null) {
+                if (orderDTO.userId != userId.toLong())
+                    return ResponseEntity.status(401).body(Values.UNAUTHORIZED)
+                val responseOrderDTO = orderService.updateOrder(orderId, orderDTO)
+                return ResponseEntity.ok(responseOrderDTO)
+            }
+            else
+                return ResponseEntity.badRequest().body(Values.FAILED_TO_AUTHORIZE)
         } catch (e: RuntimeException) {
             return ResponseEntity.badRequest().body(e.message)
         }
@@ -125,25 +134,10 @@ class OrderController {
     @DeleteMapping("/{orderId}")
     fun deleteOrder(
         @PathVariable("orderId") orderId: Long,
-        @RequestHeader("userId") userId: String?,
-        @RequestHeader("roles") roles: String?
     ): ResponseEntity<Any> {
         try {
-            if (roles == null)
-                return ResponseEntity.badRequest().body(Values.FAILED_TO_AUTHORIZE)
-            if (roles.contains(RoleName.ROLE_ADMIN.value)) {
-                orderService.deleteOrder(orderId)
-                return ResponseEntity.noContent().build()
-            }
-            else if (roles.contains(RoleName.ROLE_CUSTOMER.value) && userId != null) {
-                val orderDTO = orderService.getOrderById(orderId)
-                if (orderDTO.userId != userId.toLong())
-                    return ResponseEntity.status(401).body(Values.UNAUTHORIZED)
-                orderService.deleteOrder(orderId)
-                return ResponseEntity.noContent().build()
-            }
-            else
-                return ResponseEntity.badRequest().body(Values.FAILED_TO_AUTHORIZE)
+            orderService.deleteOrder(orderId)
+            return ResponseEntity.noContent().build()
         } catch (e: RuntimeException) {
             return ResponseEntity.badRequest().body(e.message)
         }

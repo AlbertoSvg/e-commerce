@@ -24,13 +24,11 @@ class OrderServiceApplication {
         @Autowired orderItemRepository: OrderItemRepository
     ): CommandLineRunner {
         return CommandLineRunner {
-
-
             val o1 = Order().also {
                 it.deliveryAddress = "Democratic Republic of Congo"
                 it.walletId = 1
                 it.userId = 1
-                it.status = OrderStatus.PENDING
+                it.status = OrderStatus.DELIVERING
             }
             val oi1 = OrderItem().also {
                 it.order = o1

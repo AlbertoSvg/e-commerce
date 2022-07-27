@@ -63,9 +63,13 @@ class OrderServiceImpl: OrderService {
         if (orderOpt.isEmpty) throw RuntimeException(Values.ORDER_MOT_FOUND)
         var order = orderOpt.get()
         if (orderDTO.walletId != null) order.walletId = orderDTO.walletId
-        if (orderDTO.userId != null) order.userId = orderDTO.userId
         if (orderDTO.deliveryAddress != null) order.deliveryAddress = orderDTO.deliveryAddress
-        if (orderDTO.status != null) order.status = orderDTO.status
+        if (orderDTO.status != null) {
+            if (orderDTO.status == OrderStatus.CANCELED && order.status != OrderStatus.ISSUED && order.status != OrderStatus.PENDING)
+                throw RuntimeException(Values.ORDER_NOT_CANCELABLE)
+            else
+                order.status = orderDTO.status
+        }
         order = orderRepository.save(order)
         if (orderDTO.items != null) {
             order.items.clear()
@@ -83,8 +87,7 @@ class OrderServiceImpl: OrderService {
     override fun deleteOrder(orderId: Long) {
         if (orderRepository.existsById(orderId)) {
             val order = orderRepository.findById(orderId).get()
-            if (order.status != OrderStatus.PENDING && order.status != OrderStatus.ISSUED)
-                throw RuntimeException(Values.ORDER_NOT_CANCELABLE)
+            order.items.forEach { item -> orderItemRepository.delete(item) }
             orderRepository.delete(order)
         }
         else

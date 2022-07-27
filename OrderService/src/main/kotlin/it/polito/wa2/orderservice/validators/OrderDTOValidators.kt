@@ -14,6 +14,6 @@ fun OrderDTO.validatePost() : Boolean {
  * At least one field not null
  */
 fun OrderDTO.validatePatch() : Boolean {
-    return this.userId != null || this.walletId != null || this.deliveryAddress != null || this.status != null || (this.items != null && this.items.isNotEmpty())
+    return this.userId != null && (this.walletId != null || this.deliveryAddress != null || this.status != null || (this.items != null && this.items.isNotEmpty()))
 }
 
