@@ -5,6 +5,7 @@ import it.polito.wa2.orderservice.entities.Order
 import it.polito.wa2.orderservice.entities.OrderItem
 import it.polito.wa2.orderservice.repositories.OrderItemRepository
 import it.polito.wa2.orderservice.repositories.OrderRepository
+import it.polito.wa2.saga.SagaApplication
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -14,7 +15,13 @@ import org.springframework.context.annotation.Bean
 import org.springframework.transaction.annotation.EnableTransactionManagement
 import java.math.BigDecimal
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = [
+    "it.polito.wa2.orderservice",
+    "it.polito.wa2.saga"
+],
+    scanBasePackageClasses = [
+        SagaApplication::class
+    ])
 @EnableEurekaClient
 @EnableTransactionManagement
 class OrderServiceApplication {
