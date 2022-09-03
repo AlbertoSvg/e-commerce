@@ -35,7 +35,7 @@ class OrderServiceApplication {
                 it.deliveryAddress = "Democratic Republic of Congo"
                 it.walletId = 1
                 it.userId = 1
-                it.status = OrderStatus.DELIVERING
+                it.orderStatus = OrderStatus.DELIVERING
             }
             val oi1 = OrderItem().also {
                 it.order = o1

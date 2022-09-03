@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm") //version "1.5.21"
     kotlin("plugin.spring") version "1.5.21"
     kotlin("plugin.jpa") version "1.5.21"
+    kotlin("plugin.allopen") version "1.5.21"
 }
 
 group = "it.polito.wa2"
@@ -20,7 +21,6 @@ extra["springCloudVersion"] = "2020.0.3"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    //implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

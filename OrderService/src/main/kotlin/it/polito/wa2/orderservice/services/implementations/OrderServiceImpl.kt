@@ -7,12 +7,10 @@ import it.polito.wa2.orderservice.dtos.OrderDTO
 import it.polito.wa2.orderservice.dtos.order.request.EventTypeOrderStatus
 import it.polito.wa2.orderservice.dtos.order.request.OrderDetailsDTO
 import it.polito.wa2.orderservice.dtos.order.request.OrderStatusDTO
-import it.polito.wa2.orderservice.dtos.order.request.ResponseStatus
 import it.polito.wa2.orderservice.entities.Order
 import it.polito.wa2.orderservice.repositories.OrderItemRepository
 import it.polito.wa2.orderservice.repositories.OrderRepository
 import it.polito.wa2.orderservice.services.interfaces.OrderService
-import it.polito.wa2.saga.costants.Topics.orderRequestTopic
 import it.polito.wa2.saga.services.MessageService
 import it.polito.wa2.saga.services.ProcessingLogService
 import it.polito.wa2.saga.utils.parseID
@@ -22,7 +20,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @Service
 @Transactional
@@ -63,7 +60,7 @@ class OrderServiceImpl: OrderService {
             it.userId = orderDTO.userId
             it.walletId = orderDTO.walletId
             it.deliveryAddress = orderDTO.deliveryAddress
-            it.status = OrderStatus.PENDING
+            it.orderStatus = OrderStatus.PENDING
         }
         order = orderRepository.save(order)
         orderDTO.items?.forEach { item ->
@@ -82,10 +79,10 @@ class OrderServiceImpl: OrderService {
         if (orderDTO.walletId != null) order.walletId = orderDTO.walletId
         if (orderDTO.deliveryAddress != null) order.deliveryAddress = orderDTO.deliveryAddress
         if (orderDTO.status != null) {
-            if (orderDTO.status == OrderStatus.CANCELED && order.status != OrderStatus.ISSUED && order.status != OrderStatus.PENDING)
+            if (orderDTO.status == OrderStatus.CANCELED && order.orderStatus != OrderStatus.ISSUED && order.orderStatus != OrderStatus.PENDING)
                 throw RuntimeException(Values.ORDER_NOT_CANCELABLE)
             else
-                order.status = orderDTO.status
+                order.orderStatus = orderDTO.status
         }
         order = orderRepository.save(order)
         if (orderDTO.items != null) {

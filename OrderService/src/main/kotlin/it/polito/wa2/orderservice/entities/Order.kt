@@ -9,7 +9,7 @@ import javax.persistence.OneToMany
 import javax.persistence.Table
 
 @Entity
-@Table(name = "order")
+@Table(name = "orders")
 class Order : EntityBase<Long>() {
 
     var id = getId()
@@ -36,11 +36,11 @@ class Order : EntityBase<Long>() {
     var deliveryAddress: String? = null
 
     @Column(
-        name = "status",
+        name = "order_status",
         nullable = false,
         updatable = true
     )
-    var status: OrderStatus? = null
+    var orderStatus: OrderStatus? = null
 
     @OneToMany(cascade = [CascadeType.REMOVE, CascadeType.PERSIST], mappedBy = "order")
     val items = mutableSetOf<OrderItem>()
@@ -51,7 +51,7 @@ class Order : EntityBase<Long>() {
             userId = userId,
             walletId = walletId,
             deliveryAddress = deliveryAddress,
-            status = status,
+            status = orderStatus,
             items = items.map { item -> item.toOrderItemDTO() }
         )
 }

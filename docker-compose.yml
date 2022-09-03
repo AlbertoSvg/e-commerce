@@ -1,0 +1,167 @@
+version: "3.7"
+
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+    networks:
+      - wa2-ecommerce
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+      - 29093:29093
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://kafka:29093, PLAINTEXT_EXT://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,PLAINTEXT_EXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - wa2-ecommerce
+
+
+  kafka-connect:
+    image: debezium/connect:1.6
+    container_name: kafka-connect
+    restart: unless-stopped
+    depends_on:
+      - kafka
+      - mysql
+    ports:
+      - 8083:8083
+    environment:
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_statuses
+      BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - wa2-ecommerce
+
+  mysql:
+    restart: unless-stopped
+    image: mysql
+    container_name: mysql
+    ports:
+      - 3306:3306
+    volumes:
+      - "./Databases/init.sql:/docker-entrypoint-initdb.d/init.sql"
+    networks:
+      - wa2-ecommerce
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+
+  mongo:
+    image: mongo
+    restart: unless-stopped
+    container_name: mongo
+    ports:
+      - 27017:27017
+    networks:
+      - wa2-ecommerce
+
+  eureka:
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    image: wa2-ecommerce-eurekadiscovery
+    hostname: eurekadiscovery
+    container_name: eurekadiscovery
+    restart: unless-stopped
+    ports:
+      - 8761:8761
+    networks:
+      - wa2-ecommerce
+
+  catalog-service:
+    build:
+      context: ./CatalogService
+      dockerfile: Dockerfile
+    image: wa2-ecommerce-catalog-service
+    hostname: catalog-service
+    container_name: catalog-service
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    networks:
+      - wa2-ecommerce
+    depends_on:
+      - eureka
+      - mongo
+      - mysql
+    environment:
+      # Important for clients to register with eureka
+      - eureka.client.serviceUrl.defaultZone=http://eurekadiscovery:8761/eureka/
+
+
+  warehouse-service:
+    build:
+      context: ./WarehouseService
+      dockerfile: Dockerfile
+    image: wa2-ecommerce-warehouse-service
+    hostname: warehouse-service
+    container_name: warehouse-service
+    restart: unless-stopped
+    networks:
+      - wa2-ecommerce
+    depends_on:
+      - eureka
+      - catalog-service
+    environment:
+      # Important for clients to register with eureka
+      - eureka.client.serviceUrl.defaultZone=http://eurekadiscovery:8761/eureka/
+
+
+  wallet-service:
+    build:
+      context: ./WalletService
+      dockerfile: Dockerfile
+    image: wa2-ecommerce-wallet-service
+    hostname: wallet-service
+    container_name: wallet-service
+    restart: unless-stopped
+    networks:
+      - wa2-ecommerce
+    depends_on:
+      - eureka
+      - catalog-service
+    environment:
+      # Important for clients to register with eureka
+      - eureka.client.serviceUrl.defaultZone=http://eurekadiscovery:8761/eureka/
+
+
+  order-service:
+    build:
+      context: ./OrderService
+      dockerfile: Dockerfile
+    image: wa2-ecommerce-order-service
+    hostname: order-service
+    container_name: order-service
+    restart: unless-stopped
+    networks:
+      - wa2-ecommerce
+    depends_on:
+      - eureka
+      - catalog-service
+    environment:
+      # Important for clients to register with eureka
+      - eureka.client.serviceUrl.defaultZone=http://eurekadiscovery:8761/eureka/
+
+
+networks:
+  wa2-ecommerce:
+    driver: bridge

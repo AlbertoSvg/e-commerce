@@ -8,13 +8,16 @@ import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.Digits
 
 @Entity
-@Table(name = "order_item")
+@Table(name = "order_items")
 class OrderItem : EntityBase<Long>() {
 
     var id = getId()
 
     @ManyToOne
-    @JoinColumn(name = "order")
+    @JoinColumn(
+        name = "order_id",
+        nullable = false,
+        updatable = false)
     var order: Order? = null
 
     @Column(
