@@ -1,7 +1,6 @@
 package it.polito.wa2.warehouseservice
 
 import it.polito.wa2.saga.SagaApplication
-import it.polito.wa2.warehouseservice.config.EmailConfiguration
 import it.polito.wa2.warehouseservice.entities.Category
 import it.polito.wa2.warehouseservice.entities.Product
 import it.polito.wa2.warehouseservice.entities.ProductStock
@@ -18,10 +17,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.JavaMailSenderImpl
 import org.springframework.transaction.annotation.EnableTransactionManagement
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.math.BigDecimal
-import java.net.URL
 import java.util.*
 
 @SpringBootApplication(scanBasePackages = [
@@ -34,28 +30,6 @@ import java.util.*
 @EnableEurekaClient
 @EnableTransactionManagement
 class WarehouseServiceApplication{
-
-    @Autowired
-    lateinit var emailCfg: EmailConfiguration
-
-    //Gestire l'invio delle mail con il token di registrazione
-    @Bean
-    fun getMailSender(): JavaMailSender? {
-
-        val mailSender = JavaMailSenderImpl()
-        mailSender.host = emailCfg.host
-        mailSender.port = emailCfg.port
-        mailSender.username = emailCfg.username
-        mailSender.password = emailCfg.password
-
-        val props: Properties = mailSender.javaMailProperties
-        props["mail.transport.protocol"] = "smtp"
-        props["mail.smtp.auth"] = "true"
-        props["mail.smtp.starttls.enable"] = "true"
-        props["mail.debug"] = "false"
-
-        return mailSender
-    }
 
     @Bean
     fun createWarehousesAndProducts(

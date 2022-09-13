@@ -39,4 +39,52 @@ class ClientRequest {
         return returnValue.switchIfEmpty (
                 Mono.error(RuntimeException("No response from other server")))
     }
+
+    fun <T> doGet(uri: String, className: Class<T>): T{
+        val returnValue: T?
+
+        try {
+            returnValue = webClientBuilder.build()
+                .get()
+                .uri(uri)
+                .retrieve()
+                .bodyToMono(className)
+                .block()
+        }
+        catch (e: Exception){
+            println(e.message)
+            throw RuntimeException("Error during connection with other server")
+        }
+
+        return returnValue ?: throw RuntimeException("No response from other server")
+    }
+
+    fun <T> doGetReactive(uri: String, className: Class<T>, single: Boolean = false): Publisher<T> {
+        val returnValue: Publisher<T>
+
+        try {
+            returnValue = if (single)
+                webClientBuilder.build()
+                    .get()
+                    .uri(uri)
+                    .retrieve()
+                    .bodyToMono(className)
+            else
+                webClientBuilder.build()
+                    .get()
+                    .uri(uri)
+                    .retrieve()
+                    .bodyToFlux(className)
+        }
+        catch (e: Exception){
+            return Mono.error(RuntimeException("Error during connection with other server"))
+        }
+
+
+        return if (returnValue is Mono)
+            returnValue.switchIfEmpty (
+                Mono.error(RuntimeException("No response from other server")))
+        else
+            returnValue
+    }
 }

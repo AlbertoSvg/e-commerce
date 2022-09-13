@@ -139,4 +139,6 @@ class AuthController() {
         userDetailsServiceImpl.removeRoleFromUser(body.username, body.role)
         return ResponseEntity.ok().body("Role removed from ${body.username}")
     }
+
+
 }

@@ -74,7 +74,7 @@ class CatalogServiceApplication {
             val user1 = User() //ADMIN 1
             user1.username = "u1"
             user1.password = "p1"
-            user1.email = "email1@polito.it"
+            user1.email = "testmadproject@gmail.com"
             user1.addRoleName(RoleName.ROLE_ADMIN)
             user1.isEnabled = true
             user1.name = "Pippo"
@@ -87,7 +87,7 @@ class CatalogServiceApplication {
             val user2 = User() //ADMIN 2
             user2.username = "u2"
             user2.password = "p2"
-            user2.email = "email2@polito.it"
+            user2.email = "testmadproject@gmail.com"
             user2.addRoleName(RoleName.ROLE_ADMIN)
             user2.isEnabled = true
             user2.name = "Marco"
@@ -99,7 +99,7 @@ class CatalogServiceApplication {
             val user3 = User() //CUSTOMER 1
             user3.username = "u3"
             user3.password = "p3"
-            user3.email = "email3@polito.it"
+            user3.email = "testmadproject@gmail.com"
             user3.addRoleName(RoleName.ROLE_CUSTOMER)
             user3.isEnabled = true
             user3.name = "Fabio"

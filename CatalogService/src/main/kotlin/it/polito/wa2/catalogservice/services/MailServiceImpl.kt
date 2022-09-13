@@ -1,6 +1,8 @@
 package it.polito.wa2.catalogservice.services
 
-import it.polito.wa2.catalogservice.services.MailService
+import it.polito.wa2.catalogservice.configurations.EmailConfiguration
+import it.polito.wa2.catalogservice.dtos.MailDTO
+import it.polito.wa2.catalogservice.utils.parseID
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
@@ -13,18 +15,45 @@ class MailServiceImpl: MailService {
     @Autowired
     private lateinit var mailSender: JavaMailSender
 
-    override fun sendMessage(toMail: String, subject: String, mailBody: String) {
+    @Autowired
+    private lateinit var mailCfg: EmailConfiguration
 
-        val message = SimpleMailMessage()
-        message.setFrom("doNotReply@gmail.com")
-        message.setTo(toMail)
-        message.setSubject(subject)
-        message.setText(mailBody)
+    @Autowired
+    lateinit var userDetailsServiceImpl: UserDetailsServiceImpl
 
-        mailSender.send(message)
+    override suspend fun sendMailToCustomers(mail: MailDTO, id: String){
 
-        println("Mail sent successfully to $toMail")
+
+        if (mail.userEmail == null){
+            mail.userEmail = userDetailsServiceImpl.getUserEmail(mail.userId.parseID())
+        }
+
+        val mailMessage = SimpleMailMessage()
+        mailMessage.setSubject(mail.subject)
+        mailMessage.setText(mail.mailBody)
+        mailMessage.setTo(mail.userEmail)
+        mailMessage.setFrom(mailCfg.username)
+
+        mailSender.send(mailMessage)
+        println("Mail sent successfully to ${mail.userEmail}")
 
     }
+
+    override suspend fun sendMailToAdmins(mail: MailDTO){
+        println("sendMailToAdmins")
+        val adminEmails = userDetailsServiceImpl.getAdminsEmail()
+
+        adminEmails.forEach {
+            val mailMessage = SimpleMailMessage()
+            mailMessage.setSubject(mail.subject)
+            mailMessage.setText(mail.mailBody)
+            mailMessage.setTo(it)
+            mailMessage.setFrom(mailCfg.username)
+
+            mailSender.send(mailMessage)
+            println("Mail sent successfully to ${mail.userEmail}")
+        }
+    }
+
 }
 

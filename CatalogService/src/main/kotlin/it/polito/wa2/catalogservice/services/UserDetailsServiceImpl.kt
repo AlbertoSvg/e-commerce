@@ -6,6 +6,7 @@ import it.polito.wa2.catalogservice.constants.Strings.TOKEN_EXPIRED
 import it.polito.wa2.catalogservice.constants.Strings.TOKEN_NOT_FOUND
 import it.polito.wa2.catalogservice.constants.Strings.USER_NOT_FOUND
 import it.polito.wa2.catalogservice.constants.Strings.WRONG_PARAMETERS
+import it.polito.wa2.catalogservice.dtos.MailDTO
 import it.polito.wa2.catalogservice.dtos.UserDetailsDTO
 import it.polito.wa2.catalogservice.dtos.WalletCreationRequest
 import it.polito.wa2.catalogservice.dtos.WalletDTO
@@ -61,6 +62,17 @@ class UserDetailsServiceImpl : ReactiveUserDetailsService {
             .switchIfEmpty(Mono.error(UsernameNotFoundException(USER_NOT_FOUND)))
     }
 
+    suspend fun getUserEmail(userId: Long): String{
+        val user = userRepository.findById(userId).awaitSingleOrNull()
+            ?: throw NotFoundException(USER_NOT_FOUND)
+        return user.email
+    }
+
+    suspend fun getAdminsEmail(): List<String> {
+        val admins = userRepository.getAllByRolesContaining("ADMIN").collectList().awaitSingle()
+        return admins.map { it.email }
+    }
+
     fun usernameExists(username: String): Mono<Boolean> {
         return userRepository.findByUsername(username).hasElement()
     }
@@ -111,11 +123,13 @@ class UserDetailsServiceImpl : ReactiveUserDetailsService {
         val mailBody: String = "Click here to confirm the registration" + "\r\n" +
                 "http://localhost:8080/auth/registrationConfirm?token=" + token
 
-        mailService.sendMessage(
+        val mailDTO = MailDTO(
+            user.id.toString(),
             user.email,
             "Registration email",
             mailBody
         )
+        mailService.sendMailToCustomers(mailDTO, "")
     }
 
     suspend fun confirmUserRegistration(token: String) {

@@ -3,6 +3,7 @@ package it.polito.wa2.orderservice.controllers
 import it.polito.wa2.orderservice.constants.RoleName
 import it.polito.wa2.orderservice.constants.Values
 import it.polito.wa2.orderservice.dtos.OrderDTO
+import it.polito.wa2.orderservice.dtos.order.request.OrderRequestDTO
 import it.polito.wa2.orderservice.services.interfaces.OrderService
 import it.polito.wa2.orderservice.validators.validatePatch
 import it.polito.wa2.orderservice.validators.validatePost
@@ -76,7 +77,7 @@ class OrderController {
 
     @PostMapping
     fun createOrder(
-        @RequestBody orderDTO: OrderDTO,
+        @RequestBody orderDTO: OrderRequestDTO,
         @RequestHeader("userId") userId: String?,
         @RequestHeader("roles") roles: String?
     ): ResponseEntity<Any> {

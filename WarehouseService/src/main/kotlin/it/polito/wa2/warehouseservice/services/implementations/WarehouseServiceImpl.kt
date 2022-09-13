@@ -1,10 +1,9 @@
 package it.polito.wa2.warehouseservice.services.implementations
 
-import com.netflix.discovery.converters.Auto
+import it.polito.wa2.saga.costants.Topics
+import it.polito.wa2.saga.dtos.MailDTO
 import it.polito.wa2.saga.services.MessageService
-import it.polito.wa2.warehouseservice.config.EmailConfiguration
 import it.polito.wa2.warehouseservice.constants.Values
-import it.polito.wa2.warehouseservice.constants.Values.PRODUCT_NOT_FOUND
 import it.polito.wa2.warehouseservice.constants.Values.PRODUCT_STOCK_NOT_FOUND
 import it.polito.wa2.warehouseservice.dtos.ProductStockDTO
 import it.polito.wa2.warehouseservice.dtos.WarehouseDTO
@@ -16,7 +15,6 @@ import it.polito.wa2.warehouseservice.entities.Warehouse
 import it.polito.wa2.warehouseservice.repositories.ProductRepository
 import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
 import it.polito.wa2.warehouseservice.repositories.WarehouseRepository
-import it.polito.wa2.warehouseservice.services.interfaces.MailService
 import it.polito.wa2.warehouseservice.services.interfaces.ProductService
 import it.polito.wa2.warehouseservice.services.interfaces.WarehouseService
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,12 +34,6 @@ class WarehouseServiceImpl(): WarehouseService {
 
     @Autowired
     lateinit var productStockRepository: ProductStockRepository
-
-    @Autowired
-    lateinit var mailService: MailService
-
-    @Autowired
-    lateinit var mailCfg: EmailConfiguration
 
     @Autowired
     lateinit var productRepository: ProductRepository
@@ -127,17 +119,21 @@ class WarehouseServiceImpl(): WarehouseService {
                 "in the warehouse ${productStock.warehouse?.name} " +
                 "the quantity of a product ${productStock.product?.id} is below the alarm level."
 
-        mailService.sendMessage(
-            mailCfg.username,
+        val mailDTO = MailDTO(
+            "0",
+            null,
             "Alarm notification",
             mailBody
         )
+
+        messageService.publish(mailDTO, "Alarm notification", Topics.mailTopic)
     }
     override fun updateOrAddProductStock(
         warehouseId: Long,
         productId: Long,
         productStockDTO: ProductStockDTO
     ): ProductStockDTO {
+        println("AAAAAAAAAAAAAAAAAAAAA")
         val stock: ProductStock
 
         val warehouse = getWarehouseEntityById(warehouseId)
@@ -184,6 +180,10 @@ class WarehouseServiceImpl(): WarehouseService {
 
     }
 
+    override fun getProductStocks() : List<ProductStockDTO> {
+       return productStockRepository.findAll().map { it.toProductStockDTO() }
+    }
+
     private fun updateProductStockQuantity(productStock: ProductStock, newQuantity: Long) : ProductStock{
         productStock.productQty = newQuantity
         if (newQuantity <= productStock.alarmLevel!!)
@@ -196,13 +196,13 @@ class WarehouseServiceImpl(): WarehouseService {
 
         purchaseProducts.forEach{ it ->
             val product = productService.getProductEntityById(it.productId)
-            val stocks = productStockRepository.findAllByProductAndProductQtyIsGreaterThanEqual(product, it.quantity.toLong())
+            val stocks = productStockRepository.findAllByProductAndProductQtyIsGreaterThanEqual(product, it.amount.toLong())
             if (stocks.isEmpty())
                 throw  RuntimeException(PRODUCT_STOCK_NOT_FOUND)
             val chosenStock = stocks.maxByOrNull { stock -> stock.productQty!! - stock.alarmLevel!! }!!
-            updateProductStockQuantity(chosenStock, chosenStock.productQty!! - it.quantity)
+            updateProductStockQuantity(chosenStock, chosenStock.productQty!! - it.amount)
 
-            price = price.plus(product.price!! * BigDecimal(it.quantity))
+            price = price.plus(product.price!! * BigDecimal(it.amount))
         }
         return price
     }
@@ -212,13 +212,15 @@ class WarehouseServiceImpl(): WarehouseService {
 
         productList.forEach{
             val product = productService.getProductEntityById(it.productId)
-            val stocks = productStockRepository.findAllByProductAndProductQtyIsGreaterThanEqual(product, it.quantity.toLong())
+            val stocks = productStockRepository.findAllByProductAndProductQtyIsGreaterThanEqual(product, it.amount.toLong())
             if (stocks.isEmpty())
                 throw  RuntimeException(PRODUCT_STOCK_NOT_FOUND)
-            val chosenStock = stocks.maxByOrNull { stock -> stock.productQty!! - stock.alarmLevel!! }!!
-            list.add(ProductWarehouseDTO(chosenStock.warehouse!!.getId()!!, chosenStock.product!!.getId()!!))
+            val chosenStock = stocks.maxByOrNull { stock -> stock.productQty!! - stock.alarmLevel!! }
+                ?: throw RuntimeException(PRODUCT_STOCK_NOT_FOUND)
+            val productWarehouse = ProductWarehouseDTO(chosenStock.warehouse!!.id!!, chosenStock.product!!.id!!)
+            list.add(productWarehouse)
         }
-
+        println(list)
         return list
     }
 
@@ -232,15 +234,15 @@ class WarehouseServiceImpl(): WarehouseService {
                     val newStock = ProductStock().also {
                         it.warehouse = warehouse
                         it.product = product
-                        it.productQty = purchasedProduct.quantity.toLong()
-                        it.alarmLevel = purchasedProduct.quantity.toLong()
+                        it.productQty = purchasedProduct.amount.toLong()
+                        it.alarmLevel = purchasedProduct.amount.toLong()
                     }
 
                     productStockRepository.save(newStock)
                 } else {
                     //  updateStockQuantity(stock, stock.quantity + item.amount) // questo invia la mail
                     val stock = stockOpt.get()
-                    stock.productQty = stock.productQty!! + purchasedProduct.quantity.toLong()
+                    stock.productQty = stock.productQty!! + purchasedProduct.amount.toLong()
                     productStockRepository.save(stock)
                 }
             }

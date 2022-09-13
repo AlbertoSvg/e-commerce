@@ -34,6 +34,8 @@ dependencies {
 
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
 
+    implementation("org.springframework.kafka:spring-kafka")
+
     implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j")
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
@@ -44,6 +46,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.jsonwebtoken:jjwt-api:0.11.2")
     implementation("org.projectlombok:lombok:1.18.20")
+
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.2")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.2")
 

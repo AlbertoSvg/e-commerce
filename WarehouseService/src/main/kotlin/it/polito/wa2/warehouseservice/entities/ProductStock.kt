@@ -28,6 +28,7 @@ class ProductStock: EntityBase<Long>() {
 
     fun toProductStockDTO(): ProductStockDTO =
         ProductStockDTO(
+            warehouseId = warehouse?.id,
             productId = product?.id!!,
             productQty = productQty!!,
             alarmLevel = alarmLevel!!

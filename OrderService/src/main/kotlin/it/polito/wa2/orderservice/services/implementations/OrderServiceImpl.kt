@@ -4,13 +4,15 @@ import it.polito.wa2.orderservice.constants.OrderStatus
 import it.polito.wa2.orderservice.constants.Values
 import it.polito.wa2.orderservice.constants.Values.ORDER_NOT_FOUND
 import it.polito.wa2.orderservice.dtos.OrderDTO
-import it.polito.wa2.orderservice.dtos.order.request.EventTypeOrderStatus
-import it.polito.wa2.orderservice.dtos.order.request.OrderDetailsDTO
-import it.polito.wa2.orderservice.dtos.order.request.OrderStatusDTO
+import it.polito.wa2.orderservice.dtos.order.request.*
 import it.polito.wa2.orderservice.entities.Order
 import it.polito.wa2.orderservice.repositories.OrderItemRepository
 import it.polito.wa2.orderservice.repositories.OrderRepository
 import it.polito.wa2.orderservice.services.interfaces.OrderService
+import it.polito.wa2.orderservice.utils.extractProductInWarehouse
+import it.polito.wa2.saga.costants.Topics.mailTopic
+import it.polito.wa2.saga.costants.Topics.orderRequestTopic
+import it.polito.wa2.saga.dtos.MailDTO
 import it.polito.wa2.saga.services.MessageService
 import it.polito.wa2.saga.services.ProcessingLogService
 import it.polito.wa2.saga.utils.parseID
@@ -20,6 +22,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 @Transactional
@@ -55,7 +58,7 @@ class OrderServiceImpl: OrderService {
         return order.get().toOrderDTO()
     }
 
-    override fun createOrder(orderDTO: OrderDTO): OrderDTO {
+    override fun createOrder(orderDTO: OrderRequestDTO): OrderDTO {
         var order = Order().also {
             it.userId = orderDTO.userId
             it.walletId = orderDTO.walletId
@@ -63,12 +66,21 @@ class OrderServiceImpl: OrderService {
             it.orderStatus = OrderStatus.PENDING
         }
         order = orderRepository.save(order)
-        orderDTO.items?.forEach { item ->
+        orderDTO.items.forEach { item ->
             val orderItem = item.toOrderItemEntity()
             orderItem.order = order
             order.items.add(orderItem)
         }
         orderItemRepository.saveAll(order.items)
+
+        val orderMessage = WarehouseOrderRequestNewDTO(
+            order.id.toString(),
+            order.userId.toString(),
+            order.walletId.toString(),
+            order.items.map { it.toPurchaseProductDTO() }
+        )
+
+        messageService.publish(orderMessage, "NewOrder", orderRequestTopic)
         return order.toOrderDTO()
     }
 
@@ -109,73 +121,75 @@ class OrderServiceImpl: OrderService {
     }
 
     override fun processOrderCompletion(orderStatusDTO: OrderStatusDTO, id: String, eventType: EventTypeOrderStatus) {
-//        //TODO: DA FINIRE
-//
-//        val eventID = UUID.fromString(id)
-//        if(processingLogService.isProcessed(eventID))
-//            return
-//
-//        //val orderId = orderStatusDTO.orderID.parseID()
-//        val order = getOrderEntityOrThrowException(orderStatusDTO.orderID)
-//        when(orderStatusDTO.responseStatus) {
-//            ResponseStatus.COMPLETED -> {
-//
-//                // - set status to ISSUED
-//                order.updateStatus(Status.ISSUED)
-//
-//                // - send email
-//                val mail: MailDTO = MailDTO(
-//                    order.buyerId, null,
-//                    "Your order has been issued: $orderId",
-//                    "The order has been correctly issued"
-//                )
-//                //messageService.publish(mail, "OrderIssued", mailTopic)
-//
-//                notifyAdmin(order)
-//
-//                orderRepository.save(order)
-//
-//            }
-//            ResponseStatus.FAILED -> {
-//
-//                // - set status to FAILED
-//                order.updateStatus(Status.FAILED)
-//                if (eventType == EventTypeOrderStatus.OrderPaymentFailed) {
-//                    // - if payment error rollback warehouse
-//                    val request = WarehouseOrderRequestCancelDTO(orderId.toString(),
-//                        order.deliveryItems.extractProductInWarehouse { ItemDTO(it.productId, it.amount) })
-//
-//                    messageService.publish(request,  "OrderCancel", orderRequestTopic)
-//                }
-//
-//                // - send email
-//                val mail: MailDTO = MailDTO(
-//                    order.buyerId, null,
-//                    "Your order has failed: $orderId",
-//                    "The order was not issued.\nError message: ${orderStatusDTO.errorMessage}"
-//                )
-//                //messageService.publish(mail, "OrderIssued", mailTopic)
-//
-//                orderRepository.save(order)
-//            }
-//        }
-//        processingLogService.process(eventID)
+        //TODO: DA FINIRE
+
+        val eventID = UUID.fromString(id)
+
+        if(processingLogService.isProcessed(eventID))
+            return
+
+        //val orderId = orderStatusDTO.orderID.parseID()
+        val order = getOrderEntityOrThrowException(orderStatusDTO.orderID)
+        when(orderStatusDTO.responseStatus) {
+            ResponseStatus.COMPLETED -> {
+
+                // - set status to ISSUED
+                order.updateStatus(OrderStatus.ISSUED)
+
+                // - send email
+                val mail = MailDTO(
+                    order.userId.toString(), null,
+                    "Your order has been issued: ${orderStatusDTO.orderID.parseID()}",
+                    "The order has been correctly issued"
+                )
+                messageService.publish(mail, "OrderIssued", mailTopic)
+
+                //notifyAdmin(order)
+
+                orderRepository.save(order)
+
+            }
+            ResponseStatus.FAILED -> {
+                println("ORDER FAILED")
+                // - set status to FAILED
+                order.updateStatus(OrderStatus.FAILED)
+                if (eventType == EventTypeOrderStatus.OrderPaymentFailed) {
+                    println("ORDERITEMS: ")
+                    order.items.forEach { println("id: ${it.id}, orderId: ${it.order?.id} warehouseId: ${it.warehouseId} productId: ${it.productId}") }
+                    // - if payment error rollback warehouse
+                    val request = WarehouseOrderRequestCancelDTO(orderStatusDTO.orderID,
+                        order.items.extractProductInWarehouse { PurchasedProductDTO(it.productId!!, it.amount!!)})
+                    println("ORDER FAILED - ORDERID: ${request.orderId}, LIST: ${request.productList}")
+                    messageService.publish(request,  "OrderCancel", orderRequestTopic)
+                }
+
+                // - send email
+                val mail: MailDTO = MailDTO(
+                    order.userId.toString(), null,
+                    "Your order has failed: ${orderStatusDTO.orderID}",
+                    "The order was not issued.\nError message: ${orderStatusDTO.errorMessage}"
+                )
+                messageService.publish(mail, "OrderIssued", mailTopic)
+
+                orderRepository.save(order)
+            }
+        }
+        processingLogService.process(eventID)
 
     }
 
     override fun process(orderDetailsDTO: OrderDetailsDTO, id: String) {
-//        //TODO: DA FINIRE
-//        val eventID = UUID.fromString(id)
-//        if(processingLogService.isProcessed(eventID))
-//            return
-//
-//        val order = getOrderEntityOrThrowException(orderDetailsDTO.orderId)
-//        orderDetailsDTO.productWarehouseList.forEach {
-//                productWarehouseDTO ->
-//            purchaseItemRepository.setWarehouseByOrderAndProduct(order, productWarehouseDTO.productId, productWarehouseDTO.warehouseId )
-//
-//        }
-//        processingLogService.process(eventID)
+        //TODO: DA FINIRE
+        val eventID = UUID.fromString(id)
+        if(processingLogService.isProcessed(eventID))
+            return
+
+        val order = getOrderEntityOrThrowException(orderDetailsDTO.orderId)
+        orderDetailsDTO.productWarehouseList.forEach {
+                productWarehouseDTO ->
+            orderItemRepository.setWarehouseByOrderAndProduct(order, productWarehouseDTO.productId.toLong(), productWarehouseDTO.warehouseId.toLong() )
+        }
+        processingLogService.process(eventID)
     }
 
     private fun getOrderEntityOrThrowException(orderId: String): Order {

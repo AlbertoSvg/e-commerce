@@ -49,6 +49,7 @@ until output=$(docker exec kafka-connect curl -f kafka-connect:8083/connectors)
     echo "Service is unavailable, sleeping..."
     sleep 5
   done
+sleep 2
 
 output=$(echo $output | tr -d '[' | tr -d ']' | tr -d '"')
 echo $output
@@ -66,6 +67,7 @@ do
       sleep 5
     done
 done
+sleep 2
 
 echo " "
 echo "Configuring the connector..."
@@ -77,6 +79,7 @@ until docker exec kafka-connect curl -i -X POST -H "Accept:application/json" -H 
       sleep 5
     done
 
+sleep 2
 echo " "
 echo " "
 echo " "

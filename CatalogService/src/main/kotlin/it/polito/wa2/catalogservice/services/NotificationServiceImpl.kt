@@ -49,7 +49,7 @@ class NotificationServiceImpl : NotificationService {
         }
     }
 
-    @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
+    @Scheduled(fixedRate = (1000 * 60 * 60 * 24).toLong())
     fun removeExpiredTokens() {
         CoroutineScope(Dispatchers.IO).launch {
             removeTokensAndUsers()

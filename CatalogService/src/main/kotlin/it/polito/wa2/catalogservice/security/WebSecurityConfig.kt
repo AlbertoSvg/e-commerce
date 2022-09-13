@@ -91,6 +91,17 @@ class WebfluxSecurityConfig {
             .pathMatchers(HttpMethod.GET,"/products/{productId}") //TODO: DA CONTROLLARE SE FUNZIONA!!!
             .permitAll()
 
+            .and()
+            .authorizeExchange()
+            .pathMatchers("/warehouses/**") //TODO: DA CAMBIARE
+            .permitAll()
+
+            //OrderService
+            .and()
+            .authorizeExchange()
+            .pathMatchers(HttpMethod.POST, "/orders/**") //TODO: DA CAMBIARE
+            .authenticated()
+
         http
             .cors().disable()
             .csrf().disable()

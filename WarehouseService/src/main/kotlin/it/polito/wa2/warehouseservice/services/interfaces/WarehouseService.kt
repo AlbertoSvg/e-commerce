@@ -21,6 +21,7 @@ interface WarehouseService {
     fun addProductStock(warehouseId: Long, productStockDTO: ProductStockDTO): ProductStockDTO
     fun updateOrAddProductStock(warehouseId: Long, productId: Long, productStockDTO: ProductStockDTO): ProductStockDTO
     fun updateProductStock(warehouseId: Long, productId: Long, productStockDTO: ProductStockDTO): ProductStockDTO
+    fun getProductStocks() : List<ProductStockDTO>
     fun updateQuantityAndRetrieveAmount(purchaseProducts: List<PurchaseProductDTO>) : BigDecimal
     fun getWarehouseHavingProducts(productList: List<PurchaseProductDTO>) : List<ProductWarehouseDTO>
     fun cancelRequestUpdate(productList: List<ProductsInWarehouseDTO>)

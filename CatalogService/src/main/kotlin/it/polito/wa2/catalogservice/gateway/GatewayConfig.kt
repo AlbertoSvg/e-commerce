@@ -2,6 +2,8 @@ package it.polito.wa2.catalogservice.gateway
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig
 import io.github.resilience4j.timelimiter.TimeLimiterConfig
+import it.polito.wa2.catalogservice.dtos.OrderDTO
+import it.polito.wa2.catalogservice.dtos.OrderRequestDTO
 import it.polito.wa2.catalogservice.gateway.GatewayAuthenticationFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory
@@ -11,6 +13,7 @@ import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import java.time.Duration
 
 
@@ -21,7 +24,7 @@ class GatewayConfig {
     lateinit var filter: GatewayAuthenticationFilter
 
     @Bean
-    fun routes(builder: RouteLocatorBuilder) : RouteLocator {
+    fun routes(builder: RouteLocatorBuilder, addPriceToItem: AddPriceToItem) : RouteLocator {
         return builder
             .routes()
             .route("WarehouseService - Products") {
@@ -62,19 +65,36 @@ class GatewayConfig {
                 }
                 .uri("lb://wallet-service") //who im going to contact (lb = loadbalancing)
             }
+            .route("OrderService - create Order"){
+                    it -> it.path(true,"/orders/**").and().method(HttpMethod.POST)
+                .filters { f ->
+                    f.circuitBreaker { it -> it.setFallbackUri("forward:/failure") //forward to local url failure1
+                    }
+
+                    f.filter(filter)
+                    f.modifyRequestBody<OrderDTO, OrderRequestDTO> { c ->
+                        c.rewriteFunction = addPriceToItem
+                        c.inClass = OrderDTO::class.java
+                        c.outClass = OrderRequestDTO::class.java
+                    }
+                }
+
+                .uri("lb://order-service") //who im going to contact (lb = loadbalancing)
+            }
             .route("OrderService") {
-                    it -> it.path(true,"/order/**")
+                    it -> it.path(true,"/orders/**")
                 .filters { f ->
                     f.circuitBreaker { it ->
                         it.setFallbackUri("forward:/failure") //forward to local url failure1
                     }
 
-                    f.rewritePath("/order", "/")
+                    //f.rewritePath("/order", "/")
                     f.filter(filter)
                 }
 
                 .uri("lb://order-service") //who im going to contact (lb = loadbalancing)
             }
+
             .build()
     }
 

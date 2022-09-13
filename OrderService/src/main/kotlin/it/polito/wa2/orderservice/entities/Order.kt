@@ -54,5 +54,22 @@ class Order : EntityBase<Long>() {
             status = orderStatus,
             items = items.map { item -> item.toOrderItemDTO() }
         )
+
+    fun updateStatus(newStatus: OrderStatus, e:Exception?=null){
+        val exception = e ?: RuntimeException( "Cannot update status from $orderStatus to $newStatus")
+
+        when(newStatus){
+            OrderStatus.PENDING -> {
+                throw exception
+            }
+            OrderStatus.ISSUED -> if(orderStatus != OrderStatus.PENDING) throw exception
+            OrderStatus.DELIVERING -> if(orderStatus != OrderStatus.ISSUED) throw exception
+            OrderStatus.DELIVERED -> if(orderStatus != OrderStatus.DELIVERING) throw exception
+            OrderStatus.FAILED -> if(orderStatus != OrderStatus.PENDING) throw exception
+            OrderStatus.CANCELED -> if(orderStatus != OrderStatus.ISSUED) throw exception
+        }
+
+        orderStatus = newStatus
+    }
 }
 

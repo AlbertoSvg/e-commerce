@@ -7,5 +7,5 @@ data class ProductsInWarehouseDTO(
     @field:NotNull
     val warehouseId: Long?,
     @field:NotNull @field:Size(min = 1)
-    val purchasedProducts: List<PurchaseProductDTO>
+    val purchasedProducts: List<PurchasedProductDTO>
 )

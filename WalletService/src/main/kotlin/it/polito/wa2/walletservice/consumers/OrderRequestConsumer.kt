@@ -24,6 +24,7 @@ class OrderRequestConsumer{
                @Header("eventType") eventType:String
     ){
         println("Processing message $id ($eventType) : $orderRequestDTO")
+        Thread.sleep(15000) //TODO: SLEEP DA RIMUOVERE
         orderProcessingService.process(orderRequestDTO,id)
 
 

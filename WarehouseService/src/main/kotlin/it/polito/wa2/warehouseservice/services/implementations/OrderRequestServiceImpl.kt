@@ -43,13 +43,11 @@ class OrderRequestServiceImpl : OrderRequestService {
         try {
 
             if (orderRequestDTO is WarehouseOrderRequestNewDTO) {
-
+                println("WarehouseOrderRequestNewDTO")
                 // List<ProductWarehouseDTO>
                 val productsWarehouseDTO = warehouseService.getWarehouseHavingProducts(orderRequestDTO.productList)
-
-                // if it not throw exception, continue
+                // if it not throws exception, continue
                 val amount = warehouseService.updateQuantityAndRetrieveAmount(orderRequestDTO.productList)
-
                 orderDetails = OrderDetailsDTO(orderRequestDTO.orderId, productsWarehouseDTO)
                 paymentRequest = WalletOrderPaymentDTO(
                     orderRequestDTO.buyerWalletId,
@@ -57,15 +55,15 @@ class OrderRequestServiceImpl : OrderRequestService {
                     orderRequestDTO.orderId,
                     amount
                 )
-
             } else if (orderRequestDTO is WarehouseOrderRequestCancelDTO) {
-
+                println("WarehouseOrderRequestCancelDTO")
                 warehouseService.cancelRequestUpdate(orderRequestDTO.productList)
 
             }
 
         }
         catch (e:Exception){
+            println("Error during order processing")
             orderStatusDTO = OrderStatusDTO(
                 orderRequestDTO.orderId,
                 ResponseStatus.FAILED,

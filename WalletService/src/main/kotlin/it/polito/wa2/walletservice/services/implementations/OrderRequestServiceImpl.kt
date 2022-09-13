@@ -49,6 +49,7 @@ class OrderRequestServiceImpl : OrderRequestService {
         try {
             status = self.processOrderRequest(orderRequestDTO)
         } catch (e: Exception) {
+            println("Error during order processing!")
             status = OrderStatusDTO(
                 orderRequestDTO.orderId,
                 ResponseStatus.FAILED,

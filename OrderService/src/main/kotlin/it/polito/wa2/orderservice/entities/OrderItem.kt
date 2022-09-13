@@ -1,6 +1,7 @@
 package it.polito.wa2.orderservice.entities
 
 import it.polito.wa2.orderservice.dtos.OrderItemDTO
+import it.polito.wa2.orderservice.dtos.order.request.PurchaseProductDTO
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.persistence.*
@@ -8,12 +9,12 @@ import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.Digits
 
 @Entity
-@Table(name = "order_items")
+@Table(uniqueConstraints = [UniqueConstraint(columnNames = ["order_id", "product_id"])])
 class OrderItem : EntityBase<Long>() {
 
     var id = getId()
 
-    @ManyToOne
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(
         name = "order_id",
         nullable = false,
@@ -48,7 +49,7 @@ class OrderItem : EntityBase<Long>() {
 
     @Column(
         name="warehouse_id",
-        nullable = false,
+        nullable = true,
         updatable = true
     )
     var warehouseId: Long? = null
@@ -61,5 +62,12 @@ class OrderItem : EntityBase<Long>() {
             amount = amount,
             price = price,
             warehouseId = warehouseId
+        )
+
+    fun toPurchaseProductDTO(): PurchaseProductDTO =
+        PurchaseProductDTO(
+            productId = productId!!,
+            amount = amount!!,
+            price = price!!
         )
 }

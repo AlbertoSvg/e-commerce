@@ -1,6 +1,7 @@
 package it.polito.wa2.catalogservice.repositories
 
 import it.polito.wa2.catalogservice.entities.User
+import it.polito.wa2.catalogservice.enum.RoleName
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import org.springframework.stereotype.Repository
@@ -33,4 +34,6 @@ interface UserRepository : ReactiveMongoRepository<User, Long> {
     override fun findById(id: Long): Mono<User?>
 
     override fun deleteById(id: Long): Mono<Void>
+
+    fun getAllByRolesContaining(roles: String) : Flux<User>
 }

@@ -149,4 +149,14 @@ class WarehouseController {
             return ResponseEntity.badRequest().body(e.message)
         }
     }
+
+    @GetMapping("/stocks")
+    fun getProductStocks(): ResponseEntity<Any> {
+        try{
+            val productStocks = warehouseService.getProductStocks()
+            return ResponseEntity.ok().body(productStocks)
+        }catch (e: Exception) {
+            return ResponseEntity.badRequest().body(e.message)
+        }
+    }
 }
