@@ -99,7 +99,7 @@ class WebfluxSecurityConfig {
             //OrderService
             .and()
             .authorizeExchange()
-            .pathMatchers(HttpMethod.POST, "/orders/**") //TODO: DA CAMBIARE
+            .pathMatchers("/orders/**") //TODO: DA CONTROLLARE
             .authenticated()
 
         http

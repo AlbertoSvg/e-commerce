@@ -41,6 +41,7 @@ class OrderRequestServiceImpl : OrderRequestService {
     lateinit var self: OrderRequestService
 
     override fun process(orderRequestDTO: WalletOrderRequestDTO, id: String) {
+        println("Order processing")
         val uuid = UUID.fromString(id)
         if (processingLogService.isProcessed(uuid))
             return

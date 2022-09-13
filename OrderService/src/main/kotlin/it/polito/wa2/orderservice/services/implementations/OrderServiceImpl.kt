@@ -121,8 +121,7 @@ class OrderServiceImpl: OrderService {
     }
 
     override fun processOrderCompletion(orderStatusDTO: OrderStatusDTO, id: String, eventType: EventTypeOrderStatus) {
-        //TODO: DA FINIRE
-
+        println("process order completion")
         val eventID = UUID.fromString(id)
 
         if(processingLogService.isProcessed(eventID))
@@ -132,7 +131,7 @@ class OrderServiceImpl: OrderService {
         val order = getOrderEntityOrThrowException(orderStatusDTO.orderID)
         when(orderStatusDTO.responseStatus) {
             ResponseStatus.COMPLETED -> {
-
+                println("ORDER COMPLETED - set order status = ISSUED")
                 // - set status to ISSUED
                 order.updateStatus(OrderStatus.ISSUED)
 
@@ -150,16 +149,13 @@ class OrderServiceImpl: OrderService {
 
             }
             ResponseStatus.FAILED -> {
-                println("ORDER FAILED")
+                println("ORDER FAILED - set order status = FAILED")
                 // - set status to FAILED
                 order.updateStatus(OrderStatus.FAILED)
                 if (eventType == EventTypeOrderStatus.OrderPaymentFailed) {
-                    println("ORDERITEMS: ")
-                    order.items.forEach { println("id: ${it.id}, orderId: ${it.order?.id} warehouseId: ${it.warehouseId} productId: ${it.productId}") }
                     // - if payment error rollback warehouse
                     val request = WarehouseOrderRequestCancelDTO(orderStatusDTO.orderID,
                         order.items.extractProductInWarehouse { PurchasedProductDTO(it.productId!!, it.amount!!)})
-                    println("ORDER FAILED - ORDERID: ${request.orderId}, LIST: ${request.productList}")
                     messageService.publish(request,  "OrderCancel", orderRequestTopic)
                 }
 
@@ -179,7 +175,6 @@ class OrderServiceImpl: OrderService {
     }
 
     override fun process(orderDetailsDTO: OrderDetailsDTO, id: String) {
-        //TODO: DA FINIRE
         val eventID = UUID.fromString(id)
         if(processingLogService.isProcessed(eventID))
             return

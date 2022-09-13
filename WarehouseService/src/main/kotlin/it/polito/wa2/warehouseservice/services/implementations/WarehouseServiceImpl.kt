@@ -133,7 +133,6 @@ class WarehouseServiceImpl(): WarehouseService {
         productId: Long,
         productStockDTO: ProductStockDTO
     ): ProductStockDTO {
-        println("AAAAAAAAAAAAAAAAAAAAA")
         val stock: ProductStock
 
         val warehouse = getWarehouseEntityById(warehouseId)
