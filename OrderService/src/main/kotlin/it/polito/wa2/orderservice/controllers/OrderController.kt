@@ -4,6 +4,7 @@ import it.polito.wa2.orderservice.constants.RoleName
 import it.polito.wa2.orderservice.constants.Values
 import it.polito.wa2.orderservice.dtos.OrderDTO
 import it.polito.wa2.orderservice.dtos.order.request.OrderRequestDTO
+import it.polito.wa2.orderservice.dtos.order.request.UpdateOrderRequestDTO
 import it.polito.wa2.orderservice.services.interfaces.OrderService
 import it.polito.wa2.orderservice.validators.validatePatch
 import it.polito.wa2.orderservice.validators.validatePost
@@ -11,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
+import javax.validation.Valid
 import javax.validation.constraints.Min
 
 
@@ -103,31 +106,61 @@ class OrderController {
         }
     }
 
+//    @PatchMapping("/{orderId}")
+//    fun updateOrder(
+//        @PathVariable("orderId") orderId: Long,
+//        @RequestBody updateOrderRequestDTO: UpdateOrderRequestDTO,
+//        @RequestHeader("userId") userId: String?,
+//        @RequestHeader("roles") roles: String?
+//    ): ResponseEntity<Any> {
+//        try {
+//            if (!orderDTO.validatePatch())
+//                return ResponseEntity.badRequest().body(Values.INVALID_ORDER_REPRESENTATION)
+//            if (roles == null)
+//                return ResponseEntity.badRequest().body(Values.FAILED_TO_AUTHORIZE)
+//            if (roles.contains(RoleName.ROLE_ADMIN.value)) {
+//                val responseOrderDTO = orderService.updateOrder(orderId, orderDTO)
+//                return ResponseEntity.ok(responseOrderDTO)
+//            }
+//            else if (roles.contains(RoleName.ROLE_CUSTOMER.value) && userId != null) {
+//                if (orderDTO.userId != userId.toLong())
+//                    return ResponseEntity.status(401).body(Values.UNAUTHORIZED)
+//                val responseOrderDTO = orderService.updateOrder(orderId, orderDTO)
+//                return ResponseEntity.ok(responseOrderDTO)
+//            }
+//            else
+//                return ResponseEntity.badRequest().body(Values.FAILED_TO_AUTHORIZE)
+//        } catch (e: RuntimeException) {
+//            return ResponseEntity.badRequest().body(e.message)
+//        }
+//    }
+
+
     @PatchMapping("/{orderId}")
     fun updateOrder(
         @PathVariable("orderId") orderId: Long,
-        @RequestBody orderDTO: OrderDTO,
+        @RequestBody updateOrderRequestDTO: UpdateOrderRequestDTO,
         @RequestHeader("userId") userId: String?,
         @RequestHeader("roles") roles: String?
     ): ResponseEntity<Any> {
         try {
-            if (!orderDTO.validatePatch())
+            if (!updateOrderRequestDTO.validatePatch())
                 return ResponseEntity.badRequest().body(Values.INVALID_ORDER_REPRESENTATION)
-            if (roles == null)
+            if (roles == null || userId == null)
                 return ResponseEntity.badRequest().body(Values.FAILED_TO_AUTHORIZE)
             if (roles.contains(RoleName.ROLE_ADMIN.value)) {
-                val responseOrderDTO = orderService.updateOrder(orderId, orderDTO)
+                val responseOrderDTO = orderService.updateOrder(userId, orderId, updateOrderRequestDTO, true)
                 return ResponseEntity.ok(responseOrderDTO)
             }
-            else if (roles.contains(RoleName.ROLE_CUSTOMER.value) && userId != null) {
-                if (orderDTO.userId != userId.toLong())
-                    return ResponseEntity.status(401).body(Values.UNAUTHORIZED)
-                val responseOrderDTO = orderService.updateOrder(orderId, orderDTO)
+            else if (roles.contains(RoleName.ROLE_CUSTOMER.value)) {
+                val responseOrderDTO = orderService.updateOrder(userId, orderId, updateOrderRequestDTO, false)
                 return ResponseEntity.ok(responseOrderDTO)
             }
             else
-                return ResponseEntity.badRequest().body(Values.FAILED_TO_AUTHORIZE)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Values.FAILED_TO_AUTHORIZE)
         } catch (e: RuntimeException) {
+            if(e.message == Values.UNAUTHORIZED)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Values.FAILED_TO_AUTHORIZE)
             return ResponseEntity.badRequest().body(e.message)
         }
     }

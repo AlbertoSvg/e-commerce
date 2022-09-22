@@ -2,6 +2,7 @@ package it.polito.wa2.orderservice.validators
 
 import it.polito.wa2.orderservice.dtos.OrderDTO
 import it.polito.wa2.orderservice.dtos.order.request.OrderRequestDTO
+import it.polito.wa2.orderservice.dtos.order.request.UpdateOrderRequestDTO
 
 
 /**
@@ -14,7 +15,7 @@ fun OrderRequestDTO.validatePost() : Boolean {
 /**
  * At least one field not null
  */
-fun OrderDTO.validatePatch() : Boolean {
-    return this.userId != null && (this.walletId != null || this.deliveryAddress != null || this.status != null || (this.items != null && this.items.isNotEmpty()))
+fun UpdateOrderRequestDTO.validatePatch() : Boolean {
+    return this.status != null || this.deliveryAddress != null
 }
 

@@ -26,7 +26,6 @@ interface WalletService {
      */
     fun getWalletById(walletId: Long, userId: String?, roles: String?, checkAuthorization: Boolean = true): Wallet
 
-
     /** ### Description:
      * Perform a transaction moving money between two wallets
      * @param walletSource The ID of the wallet that is sending the money (Long)

@@ -8,4 +8,5 @@ object Values {
     const val DEFAULT_PAGE_NO = "0"
     const val DEFAULT_PAGE_SIZE = "10"
     const val FAILED_TO_AUTHORIZE = "Authorization failed."
+    const val ORDER_NOT_UPDATABLE = "The order cannot be update anymore"
 }

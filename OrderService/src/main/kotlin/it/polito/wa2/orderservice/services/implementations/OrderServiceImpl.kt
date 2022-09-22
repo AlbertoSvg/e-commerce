@@ -2,7 +2,10 @@ package it.polito.wa2.orderservice.services.implementations
 
 import it.polito.wa2.orderservice.constants.OrderStatus
 import it.polito.wa2.orderservice.constants.Values
+import it.polito.wa2.orderservice.constants.Values.ORDER_NOT_CANCELABLE
 import it.polito.wa2.orderservice.constants.Values.ORDER_NOT_FOUND
+import it.polito.wa2.orderservice.constants.Values.ORDER_NOT_UPDATABLE
+import it.polito.wa2.orderservice.constants.Values.UNAUTHORIZED
 import it.polito.wa2.orderservice.dtos.OrderDTO
 import it.polito.wa2.orderservice.dtos.order.request.*
 import it.polito.wa2.orderservice.entities.Order
@@ -20,8 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.client.RestTemplate
 import java.util.*
 
 @Service
@@ -84,29 +89,38 @@ class OrderServiceImpl: OrderService {
         return order.toOrderDTO()
     }
 
-    override fun updateOrder(orderId: Long, orderDTO: OrderDTO): OrderDTO {
+    override fun updateOrder(userId: String, orderId: Long, updateOrderRequestDTO: UpdateOrderRequestDTO, authorized: Boolean): OrderDTO {
         val orderOpt = orderRepository.findById(orderId)
-        if (orderOpt.isEmpty) throw RuntimeException(Values.ORDER_NOT_FOUND)
+        if (orderOpt.isEmpty) throw RuntimeException(ORDER_NOT_FOUND)
         var order = orderOpt.get()
-        if (orderDTO.walletId != null) order.walletId = orderDTO.walletId
-        if (orderDTO.deliveryAddress != null) order.deliveryAddress = orderDTO.deliveryAddress
-        if (orderDTO.status != null) {
-            if (orderDTO.status == OrderStatus.CANCELED && order.orderStatus != OrderStatus.ISSUED && order.orderStatus != OrderStatus.PENDING)
-                throw RuntimeException(Values.ORDER_NOT_CANCELABLE)
-            else
-                order.orderStatus = orderDTO.status
+        if(!authorized && order.userId != userId.toLong())
+            throw RuntimeException(UNAUTHORIZED)
+        if (!authorized && updateOrderRequestDTO.status != null){
+            throw RuntimeException(UNAUTHORIZED)
+        }
+
+        if (updateOrderRequestDTO.deliveryAddress != null) {
+            if(order.orderStatus != OrderStatus.ISSUED && order.orderStatus != OrderStatus.PENDING)
+                throw RuntimeException(ORDER_NOT_UPDATABLE)
+            order.deliveryAddress = updateOrderRequestDTO.deliveryAddress
+        }
+
+        if(authorized && updateOrderRequestDTO.status != null){
+            if(updateOrderRequestDTO.status == OrderStatus.CANCELED)
+                throw RuntimeException(ORDER_NOT_CANCELABLE)
+
+            order.updateStatus(updateOrderRequestDTO.status)
+
+            val mail = MailDTO(
+                order.userId.toString(), null,
+                "Your order's status has been correctly updated: $orderId",
+                "The order's status has been correctly updated to ${order.orderStatus}"
+            )
+            messageService.publish(mail, "OrderStatusUpdated", mailTopic)
+
         }
         order = orderRepository.save(order)
-        if (orderDTO.items != null) {
-            order.items.clear()
-            orderItemRepository.deleteAllByOrder(order)
-            orderDTO.items.forEach { item ->
-                val orderItem = item.toOrderItemEntity()
-                orderItem.order = order
-                order.items.add(orderItem)
-            }
-            orderItemRepository.saveAll(order.items)
-        }
+
         return order.toOrderDTO()
     }
 
@@ -117,7 +131,7 @@ class OrderServiceImpl: OrderService {
             orderRepository.delete(order)
         }
         else
-            throw RuntimeException(Values.ORDER_NOT_FOUND)
+            throw RuntimeException(ORDER_NOT_FOUND)
     }
 
     override fun processOrderCompletion(orderStatusDTO: OrderStatusDTO, id: String, eventType: EventTypeOrderStatus) {
