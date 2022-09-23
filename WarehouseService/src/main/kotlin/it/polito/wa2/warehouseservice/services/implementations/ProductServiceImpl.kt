@@ -7,7 +7,9 @@ import it.polito.wa2.warehouseservice.dtos.ProductDTO
 import it.polito.wa2.warehouseservice.dtos.CommentDTO
 import it.polito.wa2.warehouseservice.dtos.ResponseProductDTO
 import it.polito.wa2.warehouseservice.entities.Category
+import it.polito.wa2.warehouseservice.entities.Comment
 import it.polito.wa2.warehouseservice.entities.Product
+import it.polito.wa2.warehouseservice.repositories.CommentRepository
 import it.polito.wa2.warehouseservice.repositories.ProductRepository
 import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
 import it.polito.wa2.warehouseservice.services.interfaces.ProductService
@@ -27,6 +29,9 @@ class ProductServiceImpl: ProductService {
 
     @Autowired
     private lateinit var productStockRepository: ProductStockRepository
+
+    @Autowired
+    private lateinit var commentRepository: CommentRepository
 
     override fun getProducts(category: String?, pageNo: Int, pageSize: Int): Page<ResponseProductDTO> {
         val paging = PageRequest.of(pageNo, pageSize)
@@ -149,13 +154,23 @@ class ProductServiceImpl: ProductService {
         else return product.picture!!
     }
 
-    override fun addComment(comment: AddCommentDTO): CommentDTO {
-        TODO("Not yet implemented")
-        //per implementarlo dobbiamo fare prima OrderService per gestire i PurchasedProducts
+    override fun addComment(commentDTO: AddCommentDTO): CommentDTO {
+        val productOpt = productRepository.findById(commentDTO.productId)
+        if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
+        val comment = Comment().also {
+            it.product = productOpt.get()
+            it.body = commentDTO.body
+            it.title = commentDTO.title
+            it.stars = commentDTO.stars
+        }
+        return commentRepository.save(comment).toCommentDTO()
     }
 
-    override fun getCommentsByProductId(productId: Long, pageNo: Int, pageSize: Int): Page<ResponseProductDTO> {
-        TODO("Not yet implemented")
-        //per implementarlo dobbiamo fare prima OrderService per gestire i PurchasedProducts
+    override fun getCommentsByProductId(productId: Long, pageNo: Int, pageSize: Int): Page<CommentDTO> {
+        val paging = PageRequest.of(pageNo, pageSize)
+        val productOpt = productRepository.findById(productId)
+        if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
+        val comments = commentRepository.findAllByProductId(productId, paging)
+        return comments.map{c -> c.toCommentDTO()}
     }
 }

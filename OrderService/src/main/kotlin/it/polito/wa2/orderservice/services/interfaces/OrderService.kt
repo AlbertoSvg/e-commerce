@@ -1,5 +1,6 @@
 package it.polito.wa2.orderservice.services.interfaces
 
+import it.polito.wa2.orderservice.dtos.OrderCheckDTO
 import it.polito.wa2.orderservice.dtos.OrderDTO
 import it.polito.wa2.orderservice.dtos.order.request.EventTypeOrderStatus
 import it.polito.wa2.orderservice.dtos.order.request.OrderDetailsDTO
@@ -16,4 +17,5 @@ interface OrderService {
     fun getCustomerOrders(userId: String, pageNo: Int, pageSize: Int): Page<OrderDTO>
     fun processOrderCompletion(orderStatusDTO: OrderStatusDTO, id: String, eventType: EventTypeOrderStatus)
     fun process(orderDetailsDTO: OrderDetailsDTO, id: String)
+    fun checkPurchase(productId: Long, userId: Long): OrderCheckDTO
 }

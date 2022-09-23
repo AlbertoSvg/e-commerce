@@ -10,3 +10,5 @@ data class OrderDTO (
     val status: OrderStatus?,
     val items: List<OrderItemDTO>?
 )
+
+data class OrderCheckDTO (val ok: Boolean?)

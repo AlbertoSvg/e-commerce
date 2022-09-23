@@ -3,6 +3,7 @@ package it.polito.wa2.orderservice.services.implementations
 import it.polito.wa2.orderservice.constants.OrderStatus
 import it.polito.wa2.orderservice.constants.Values
 import it.polito.wa2.orderservice.constants.Values.ORDER_NOT_FOUND
+import it.polito.wa2.orderservice.dtos.OrderCheckDTO
 import it.polito.wa2.orderservice.dtos.OrderDTO
 import it.polito.wa2.orderservice.dtos.order.request.*
 import it.polito.wa2.orderservice.entities.Order
@@ -56,6 +57,17 @@ class OrderServiceImpl: OrderService {
         val order = orderRepository.findById(orderId)
         if (order.isEmpty) throw RuntimeException(Values.ORDER_NOT_FOUND)
         return order.get().toOrderDTO()
+    }
+
+    override fun checkPurchase(productId: Long, userId: Long): OrderCheckDTO {
+        val orders = orderRepository.findAllByUserId(userId)
+        val order = orders.find { order: Order ->
+            order.items.any { orderItem -> orderItem.productId == productId }
+        }
+        return if (order == null)
+            OrderCheckDTO(false)
+        else
+            OrderCheckDTO(true)
     }
 
     override fun createOrder(orderDTO: OrderRequestDTO): OrderDTO {

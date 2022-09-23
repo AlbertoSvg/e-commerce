@@ -2,13 +2,14 @@ package it.polito.wa2.warehouseservice.controllers
 
 import it.polito.wa2.warehouseservice.constants.Values
 import it.polito.wa2.warehouseservice.dtos.AddCommentDTO
+import it.polito.wa2.warehouseservice.dtos.OrderCheckDTO
 import it.polito.wa2.warehouseservice.dtos.ProductDTO
-import it.polito.wa2.warehouseservice.repositories.ProductStockRepository
 import it.polito.wa2.warehouseservice.services.interfaces.ProductService
 import it.polito.wa2.warehouseservice.services.interfaces.WarehouseService
 import it.polito.wa2.warehouseservice.validators.validatePatch
 import it.polito.wa2.warehouseservice.validators.validatePost
 import it.polito.wa2.warehouseservice.validators.validatePut
+import it.polito.wa2.warehouseservice.webclient.ClientRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -28,6 +29,8 @@ class ProductController {
     @Autowired
     private lateinit var warehouseService: WarehouseService
 
+    @Autowired
+    private lateinit var request: ClientRequest
 
     @GetMapping
     fun getProducts(
@@ -161,14 +164,20 @@ class ProductController {
         }
     }
 
-    //Una persona può aggiungere un commento solo se ha comprato il prodotto
+
     @PostMapping("/{productId}/comments")
-    @ResponseStatus(HttpStatus.CREATED)
     fun addComment(@RequestBody @Valid comment: AddCommentDTO): ResponseEntity<Any> {
-        return try{
-            ResponseEntity.status(HttpStatus.CREATED).body(productService.addComment(comment))
+        try {
+            val uri = "http://order-service:8300/orders/"+comment.productId.toString()+"/buyers/"+comment.userId.toString()
+            val orderCheckDTO = request.doGet(uri, OrderCheckDTO::class.java)
+            if (orderCheckDTO.ok == true) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(productService.addComment(comment))
+            }
+            else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+            }
         } catch(e: RuntimeException) {
-            ResponseEntity.badRequest().body(e.message)
+            return ResponseEntity.badRequest().body(e.message)
         }
     }
 

@@ -12,5 +12,7 @@ data class AddCommentDTO(
     @field:NotNull @field:Min(0) @field:Max(5)
     val stars: Int,
     @field:NotNull
-    val productId: Long
+    val productId: Long,
+    @field:NotNull
+    val userId: Long
 )

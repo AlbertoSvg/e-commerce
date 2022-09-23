@@ -11,4 +11,5 @@ import org.springframework.transaction.annotation.Transactional
 interface OrderRepository: PagingAndSortingRepository<Order, Long> {
     @Transactional(readOnly = true)
     fun findAllByUserId(userId: Long, page: Pageable): Page<Order>
+    fun findAllByUserId(userId: Long): List<Order>
 }
