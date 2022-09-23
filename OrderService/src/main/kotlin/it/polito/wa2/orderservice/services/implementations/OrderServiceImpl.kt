@@ -6,6 +6,7 @@ import it.polito.wa2.orderservice.constants.Values.ORDER_NOT_CANCELABLE
 import it.polito.wa2.orderservice.constants.Values.ORDER_NOT_FOUND
 import it.polito.wa2.orderservice.constants.Values.ORDER_NOT_UPDATABLE
 import it.polito.wa2.orderservice.constants.Values.UNAUTHORIZED
+import it.polito.wa2.orderservice.dtos.OrderCheckDTO
 import it.polito.wa2.orderservice.dtos.OrderDTO
 import it.polito.wa2.orderservice.dtos.order.request.*
 import it.polito.wa2.orderservice.entities.Order
@@ -23,10 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.http.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.RestTemplate
 import java.util.*
 
 @Service
