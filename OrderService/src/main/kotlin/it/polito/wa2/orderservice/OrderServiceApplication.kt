@@ -12,9 +12,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient
 import org.springframework.context.annotation.Bean
-import org.springframework.mail.javamail.JavaMailSender
-import org.springframework.mail.javamail.JavaMailSenderImpl
 import org.springframework.transaction.annotation.EnableTransactionManagement
+import org.springframework.web.client.RestTemplate
 import java.math.BigDecimal
 import java.util.*
 
@@ -28,6 +27,7 @@ import java.util.*
 @EnableEurekaClient
 @EnableTransactionManagement
 class OrderServiceApplication {
+
     @Bean
     fun createOrdersAndOrderItems(
         @Autowired orderRepository: OrderRepository,
