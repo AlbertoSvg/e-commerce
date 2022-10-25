@@ -154,7 +154,7 @@ class ProductServiceImpl: ProductService {
         else return product.picture!!
     }
 
-    override fun addComment(commentDTO: AddCommentDTO): CommentDTO {
+    override fun addComment(commentDTO: AddCommentDTO, userId: Long): CommentDTO {
         val productOpt = productRepository.findById(commentDTO.productId)
         if (productOpt.isEmpty) throw RuntimeException(Values.PRODUCT_NOT_FOUND)
         val comment = Comment().also {
@@ -162,6 +162,7 @@ class ProductServiceImpl: ProductService {
             it.body = commentDTO.body
             it.title = commentDTO.title
             it.stars = commentDTO.stars
+            it.userId = userId
         }
         return commentRepository.save(comment).toCommentDTO()
     }

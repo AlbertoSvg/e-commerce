@@ -54,14 +54,14 @@ class OrderController {
 
     @GetMapping("/{productId}/buyers/{userId}")
     fun checkPurchase(
-        @RequestParam("productId") productId: Long,
-        @RequestParam("userId") userId:Long
+        @PathVariable("productId") productId: Long,
+        @PathVariable("userId") userId: Long
     ): ResponseEntity<Any> {
         try {
             val orderCheckDTO = orderService.checkPurchase(productId, userId)
             return ResponseEntity.ok(orderCheckDTO)
         } catch (e: RuntimeException) {
-            return ResponseEntity.status(400).build()
+            return ResponseEntity.badRequest().body("Error")
         }
     }
 

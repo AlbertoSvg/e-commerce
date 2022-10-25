@@ -165,16 +165,20 @@ class ProductController {
     }
 
 
-    @PostMapping("/{productId}/comments")
-    fun addComment(@RequestBody @Valid comment: AddCommentDTO): ResponseEntity<Any> {
+    @PostMapping("/comments")
+
+    fun addComment(
+        @RequestBody @Valid comment: AddCommentDTO,
+        @RequestHeader("userId") userId : Long
+    ): ResponseEntity<Any> {
         try {
-            val uri = "http://order-service:8300/orders/"+comment.productId.toString()+"/buyers/"+comment.userId.toString()
+            val uri = "http://order-service:8300/orders/"+comment.productId.toString()+"/buyers/"+userId
             val orderCheckDTO = request.doGet(uri, OrderCheckDTO::class.java)
             if (orderCheckDTO.ok == true) {
-                return ResponseEntity.status(HttpStatus.CREATED).body(productService.addComment(comment))
+                return ResponseEntity.status(HttpStatus.CREATED).body(productService.addComment(comment, userId))
             }
             else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product NOT purchased")
             }
         } catch(e: RuntimeException) {
             return ResponseEntity.badRequest().body(e.message)

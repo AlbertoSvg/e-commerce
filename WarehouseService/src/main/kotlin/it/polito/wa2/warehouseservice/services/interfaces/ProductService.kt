@@ -18,6 +18,6 @@ interface ProductService {
     fun deleteProduct(productId: Long)
     fun addPicture(productId: Long, picture: MultipartFile)
     fun getPicture(productId: Long): ByteArray
-    fun addComment(commentDTO: AddCommentDTO) : CommentDTO
+    fun addComment(commentDTO: AddCommentDTO, userId: Long) : CommentDTO
     fun getCommentsByProductId(productId: Long, pageNo: Int, pageSize: Int) : Page<CommentDTO>
 }

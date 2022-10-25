@@ -84,12 +84,16 @@ class WebfluxSecurityConfig {
             //WarehouseService
             .and()
             .authorizeExchange()
-            .pathMatchers(HttpMethod.GET,"/products") //TODO: DA CONTROLLARE SE FUNZIONA!!!
+            .pathMatchers(HttpMethod.GET,"/products/{productId}/warehouses") //TODO: DA CONTROLLARE SE FUNZIONA!!!
+            .authenticated()
+            .and()
+            .authorizeExchange()
+            .pathMatchers(HttpMethod.GET,"/products/**") //TODO: DA CONTROLLARE SE FUNZIONA!!!
             .permitAll()
             .and()
             .authorizeExchange()
-            .pathMatchers(HttpMethod.GET,"/products/{productId}") //TODO: DA CONTROLLARE SE FUNZIONA!!!
-            .permitAll()
+            .pathMatchers("/products/**")
+            .authenticated()
 
             .and()
             .authorizeExchange()
