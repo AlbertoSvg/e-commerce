@@ -34,7 +34,7 @@ class WarehouseController {
             response["totalItems"] = warehousePageDTO.totalElements
             response["totalPages"] = warehousePageDTO.totalPages
             return ResponseEntity.ok(response)
-        } catch(e: RuntimeException) { //TODO: diversificazione eccezioni
+        } catch(e: RuntimeException) {
             return ResponseEntity.badRequest().body(e.message)
         }
     }

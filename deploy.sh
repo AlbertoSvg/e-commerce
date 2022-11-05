@@ -52,7 +52,7 @@ until output=$(docker exec kafka-connect curl -f kafka-connect:8083/connectors)
 sleep 2
 
 output=$(echo $output | tr -d '[' | tr -d ']' | tr -d '"')
-echo $output
+echo "$output"
 IFS=',' read -a output <<< "$output"
 
 echo " "
@@ -73,12 +73,15 @@ echo " "
 echo "Configuring the connector..."
 echo " "
 
-until docker exec kafka-connect curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" kafka-connect:8083/connectors/ -d "$DEBEZIUM_CONFIG"
+until out=$(docker exec kafka-connect curl --fail -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" kafka-connect:8083/connectors/ -d "$DEBEZIUM_CONFIG")
     do
+      echo " "
       echo "Route is unavailable, sleeping..."
+      echo " "
       sleep 5
     done
-
+echo " "
+echo "$out"
 sleep 2
 echo " "
 echo " "

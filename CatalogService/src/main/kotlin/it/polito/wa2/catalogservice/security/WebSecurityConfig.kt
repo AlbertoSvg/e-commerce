@@ -84,26 +84,42 @@ class WebfluxSecurityConfig {
             //WarehouseService
             .and()
             .authorizeExchange()
-            .pathMatchers(HttpMethod.GET,"/products/{productId}/warehouses") //TODO: DA CONTROLLARE SE FUNZIONA!!!
-            .authenticated()
+            .pathMatchers(HttpMethod.GET,"/products/{productId}/warehouses")
+            .hasRole("ADMIN")
             .and()
             .authorizeExchange()
-            .pathMatchers(HttpMethod.GET,"/products/**") //TODO: DA CONTROLLARE SE FUNZIONA!!!
+            .pathMatchers(HttpMethod.GET,"/products/**")
             .permitAll()
             .and()
             .authorizeExchange()
             .pathMatchers("/products/**")
-            .authenticated()
+            .hasRole("ADMIN")
 
             .and()
             .authorizeExchange()
-            .pathMatchers("/warehouses/**") //TODO: DA CAMBIARE
-            .permitAll()
+            .pathMatchers("/warehouses/**")
+            .hasRole("ADMIN")
 
             //OrderService
             .and()
             .authorizeExchange()
-            .pathMatchers("/orders/**") //TODO: DA CONTROLLARE
+            .pathMatchers(HttpMethod.GET, "/orders/**")
+            .authenticated()
+            .and()
+            .authorizeExchange()
+            .pathMatchers(HttpMethod.GET, "/orders/{orderId}")
+            .authenticated()
+            .and()
+            .authorizeExchange()
+            .pathMatchers(HttpMethod.POST, "/orders")
+            .authenticated()
+            .and()
+            .authorizeExchange()
+            .pathMatchers(HttpMethod.DELETE, "/orders/{orderId}")
+            .authenticated()
+            .and()
+            .authorizeExchange()
+            .pathMatchers(HttpMethod.PATCH, "/orders/{orderId}")
             .authenticated()
 
         http

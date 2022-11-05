@@ -86,8 +86,6 @@ class Product : EntityBase<Long>(){
         this.creationDate = LocalDateTime.now()
     }
 
-//    @OneToMany(mappedBy = "product")
-//    val productsStocks = mutableSetOf<ProductStock>() //todo: Ci serve davvero?
     fun toProductDTO(
     ) : ResponseProductDTO {
         val rating =
@@ -103,7 +101,7 @@ class Product : EntityBase<Long>(){
             category = category?.name,
             description = description,
             price = price,
-            pictureUrl = "/products/$id/picture",
+            pictureUrl = (if (picture != null) "/products/$id/picture" else ""),
             rating,
             creationDate,
             "/products/$id/comments"

@@ -97,7 +97,6 @@ class WarehouseServiceImpl(): WarehouseService {
 
     override fun updateWarehouse(warehouseId: Long, warehouseDTO: WarehouseDTO): WarehouseDTO {
         val warehouse = getWarehouseEntityById(warehouseId)
-        //TODO: se aggiungiamo altri membri al warehouseDTO, aggiungi qui!)
         if (warehouseDTO.name != null) warehouse.name = warehouseDTO.name
         return warehouseRepository.save(warehouse).toWarehouseDTO()
     }

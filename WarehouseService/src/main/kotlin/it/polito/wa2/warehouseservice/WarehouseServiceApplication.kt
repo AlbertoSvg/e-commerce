@@ -17,7 +17,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.JavaMailSenderImpl
 import org.springframework.transaction.annotation.EnableTransactionManagement
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.math.BigDecimal
+import java.net.URL
 import java.util.*
 
 @SpringBootApplication(scanBasePackages = [
@@ -53,18 +56,18 @@ class WarehouseServiceApplication{
 
 
             //https://www.lg.com/it/images/tv/md05976376/gallery/lg-tv-43LK6100PLB_m001.jpg
-//            val imageUrl = "https://www.lg.com/it/images/tv/md05976376/gallery/lg-tv-43LK6100PLB_m001.jpg"
-//            val url = URL(imageUrl)
-//            val stream: InputStream = url.openStream()
-//            val byteArray = ByteArrayOutputStream()
-//            val b = ByteArray(2048)
-//            var length: Int
-//            while (stream.read(b).also { length = it } != -1) {
-//                byteArray.write(b, 0, length)
-//            }
-//            stream.close()
-//
-//            val picture = byteArray.toByteArray()
+            val imageUrl = "https://www.lg.com/it/images/tv/md05976376/gallery/lg-tv-43LK6100PLB_m001.jpg"
+            val url = URL(imageUrl)
+            val stream: InputStream = url.openStream()
+            val byteArray = ByteArrayOutputStream()
+            val b = ByteArray(2048)
+            var length: Int
+            while (stream.read(b).also { length = it } != -1) {
+                byteArray.write(b, 0, length)
+            }
+            stream.close()
+
+            val picture = byteArray.toByteArray()
 
             val p1 = Product().also {
                 it.name = "LG TV"
@@ -73,7 +76,7 @@ class WarehouseServiceApplication{
                 it.price = BigDecimal("1000")
                 it.numRatings = 1
                 it.numStars = 4
-                //it.picture = picture
+                it.picture = picture
             }
 
             productRepository.save(p1)

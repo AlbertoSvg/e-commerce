@@ -119,35 +119,6 @@ class OrderController {
         }
     }
 
-//    @PatchMapping("/{orderId}")
-//    fun updateOrder(
-//        @PathVariable("orderId") orderId: Long,
-//        @RequestBody updateOrderRequestDTO: UpdateOrderRequestDTO,
-//        @RequestHeader("userId") userId: String?,
-//        @RequestHeader("roles") roles: String?
-//    ): ResponseEntity<Any> {
-//        try {
-//            if (!orderDTO.validatePatch())
-//                return ResponseEntity.badRequest().body(Values.INVALID_ORDER_REPRESENTATION)
-//            if (roles == null)
-//                return ResponseEntity.badRequest().body(Values.FAILED_TO_AUTHORIZE)
-//            if (roles.contains(RoleName.ROLE_ADMIN.value)) {
-//                val responseOrderDTO = orderService.updateOrder(orderId, orderDTO)
-//                return ResponseEntity.ok(responseOrderDTO)
-//            }
-//            else if (roles.contains(RoleName.ROLE_CUSTOMER.value) && userId != null) {
-//                if (orderDTO.userId != userId.toLong())
-//                    return ResponseEntity.status(401).body(Values.UNAUTHORIZED)
-//                val responseOrderDTO = orderService.updateOrder(orderId, orderDTO)
-//                return ResponseEntity.ok(responseOrderDTO)
-//            }
-//            else
-//                return ResponseEntity.badRequest().body(Values.FAILED_TO_AUTHORIZE)
-//        } catch (e: RuntimeException) {
-//            return ResponseEntity.badRequest().body(e.message)
-//        }
-//    }
-
 
     @PatchMapping("/{orderId}")
     fun updateOrder(
