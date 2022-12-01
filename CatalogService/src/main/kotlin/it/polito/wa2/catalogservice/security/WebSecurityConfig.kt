@@ -92,6 +92,10 @@ class WebfluxSecurityConfig {
             .permitAll()
             .and()
             .authorizeExchange()
+            .pathMatchers(HttpMethod.POST,"/products/comments")
+            .authenticated()
+            .and()
+            .authorizeExchange()
             .pathMatchers("/products/**")
             .hasRole("ADMIN")
 

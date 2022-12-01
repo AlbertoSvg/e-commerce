@@ -49,7 +49,7 @@ class ProductServiceImpl: ProductService {
             }
             products = productRepository.findAllByCategory(categoryName, paging)
         }
-        return products.map { p -> p.toProductDTO().also { it.totalProductQty = productStockRepository.getTotalQuantityByProductId(it.id!!)} }
+        return products.map { p -> p.toProductDTO().also { it.totalProductQty = productStockRepository.getTotalQuantityByProductId(it.id!!)?: 0} }
     }
 
     override fun getProductById(productId: Long): ResponseProductDTO {

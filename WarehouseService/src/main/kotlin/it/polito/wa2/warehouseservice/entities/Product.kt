@@ -10,7 +10,6 @@ import java.time.LocalDateTime
 import javax.persistence.*
 import javax.validation.constraints.*
 
-//NOTA: se aggiungiamo campi all'entità, modifcare DTO, service, controller, validators per coerenza
 
 @Entity
 @Table(name = "product")

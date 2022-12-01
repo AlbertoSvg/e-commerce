@@ -167,8 +167,6 @@ class OrderServiceImpl: OrderService {
                 )
                 messageService.publish(mail, "OrderIssued", mailTopic)
 
-                //notifyAdmin(order)
-
                 orderRepository.save(order)
 
             }

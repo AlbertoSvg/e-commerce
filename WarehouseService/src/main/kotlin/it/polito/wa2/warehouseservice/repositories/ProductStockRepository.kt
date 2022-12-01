@@ -21,7 +21,7 @@ interface ProductStockRepository: PagingAndSortingRepository<ProductStock, Long>
     fun findProductStockByWarehouseAndProduct(warehouse: Warehouse, product: Product): Optional<ProductStock>
 
     @Query("SELECT sum(p.productQty) FROM ProductStock p WHERE p.product.id = :productId")
-    fun getTotalQuantityByProductId(@Param("productId") productId: Long) : Long
+    fun getTotalQuantityByProductId(@Param("productId") productId: Long) : Long?
 
     @Transactional(readOnly = true)
     fun findAllByProductAndProductQtyIsGreaterThanEqual(product: Product, productQty: Long): List<ProductStock>
